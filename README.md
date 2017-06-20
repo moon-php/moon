@@ -2,45 +2,45 @@ Defining Moon\App api
 
 ```php
 <?php
-use Moon\Container;
-use Moon\App;
-$container = new Container([]);
-$app = new App($container);
+
+$app = new \Moon\Core\App(/*Container instance*/);
 
 // Add generic pipelines to you app
 $app->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$app->pipe([Fqcn\ClassOne::class]);
+$app->pipe(Fqcn\ClassOne::class);
 
 
 
+// If the app is a http application
 ////////////////////////////////////
 ////////////////// Web
 ////////////////////////////////////
-$httpUserPipeline = new HttpPipeline();
-$httpUserPipeline->pipe('method', 'regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$httpUserPipeline->pipe('method', 'regex', [Fqcn\Class::class]);
-$httpContactPipeline = new HttpPipeline();
-$httpContactPipeline->pipe('method', 'regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$httpContactPipeline->pipe('method', 'regex', [Fqcn\Class::class]);
+$httpUserPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex');
+$httpUserPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$httpUserPipeline->pipe(Fqcn\Class::class);
+$httpContactPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex');
+$httpContactPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$httpContactPipeline->pipe(Fqcn\Class::class);
 
 // Or Router (is a syntax sugar for web api wrap a HttpPipeline Object)
-$router = new Router();
+$router = new \Moon\Core\Router();
 $router->get('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 $router->post('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
 // run
-$app->runWeb([$httpUserPipeline, $httpContactPipeline, $router]);
+$app->runWeb([$httpUserPipeline, $httpContactPipeline, $router->pipelines()]);
 
 
-
+// If the app is a command application
 ////////////////////////////////////
 ////////////////// Cli
 ////////////////////////////////////
-$cliUserPipeline = new CliPipeline();
-$cliUserPipeline->pipe('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$cliUserPipeline->pipe('regex', [Fqcn\Class::class]);
+$cliUserPipeline = new \Moon\Core\Pipeline\CliPipeline('regex');
+$cliUserPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$cliUserPipeline->pipe(Fqcn\Class::class);
 // Or Cli (is a syntax sugar for command wrap a CliPipeline Object)
-$cliCommand = new Cli();
+$cliCommand = new \Moon\Core\Cli();
 $cliCommand->command('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+
 // run
-$app->runCli([$cliUserPipeline, $cliCommand]);
+$app->runCli([$cliUserPipeline, $cliCommand->pipelines()]);
 ```
