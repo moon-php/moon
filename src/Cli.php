@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
+use Moon\Core\Collection\CliPipelineArrayCollection;
+use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Pipeline\CliPipeline;
 
 class Cli
@@ -17,8 +19,8 @@ class Cli
         $this->cliPipelines[] = $cliPipeline;
     }
 
-    public function pipelines(): array
+    public function pipelines(): CliPipelineCollectionInterface
     {
-        return $this->cliPipelines;
+        return new CliPipelineArrayCollection($this->cliPipelines);
     }
 }

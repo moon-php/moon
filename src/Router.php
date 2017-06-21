@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
+use Moon\Core\Collection\HttpPipelineArrayCollection;
+use Moon\Core\Collection\HttpPipelineCollectionInterface;
 use Moon\Core\Pipeline\HttpPipeline;
 
 class Router
@@ -52,8 +54,8 @@ class Router
         $this->httpPipelines[] = $pipeline;
     }
 
-    public function pipelines(): array
+    public function pipelines(): HttpPipelineCollectionInterface
     {
-        return $this->httpPipelines;
+        return new HttpPipelineArrayCollection($this->httpPipelines);
     }
 }

@@ -6,30 +6,18 @@ namespace Moon\Core\Pipeline;
 
 use App\Core\Matchable\Matchable;
 
-class CliPipeline implements MatchablePipelineInterface
+class CliPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
-    /**
-     * @var array
-     */
-    protected $stages = [];
     /**
      * @var string
      */
     protected $pattern;
 
-    public function __construct(string $pattern)
+    public function __construct(string $pattern, $stages = null)
     {
         $this->pattern = $pattern;
-    }
-
-    public function pipe($stages): void
-    {
-        if (!is_array($stages)) {
-            $this->stages[] = $stages;
-        }
-
-        foreach ($stages as $stage) {
-            $this->pipe($stage);
+        if ($stages !== null) {
+            $this->pipe($stages);
         }
     }
 
@@ -40,10 +28,5 @@ class CliPipeline implements MatchablePipelineInterface
         }
 
         return false;
-    }
-
-    public function stages(): array
-    {
-        return $this->stages;
     }
 }
