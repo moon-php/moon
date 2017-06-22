@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Matchable;
+namespace Moon\Core\Matchable;
 
 interface Matchable
 {
+    /**
+     * Return true if a matchable object is matched by criteria
+     *
+     * @param array $criteria
+     *
+     * @return bool
+     */
     public function match(array $criteria): bool;
 }

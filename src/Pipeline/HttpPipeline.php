@@ -4,31 +4,55 @@ declare(strict_types=1);
 
 namespace Moon\Core\Pipeline;
 
-use App\Core\Matchable\Matchable;
+use Moon\Core\Exception\InvalidArgumentException;
+use Moon\Core\Matchable\Matchable;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
     /**
-     * @var string
+     * @var string $pattern
      */
-    private $pattern;
-    /**
-     * @var string
-     */
-    private $verb;
+    protected $pattern;
 
+    /**
+     * @var string $verb
+     */
+    protected $verb;
+
+    /**
+     * @var array
+     */
+    protected const VALID_VERBS = ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'];
+
+    /**
+     * HttpPipeline constructor.
+     *
+     * @param string $verb
+     * @param string $pattern
+     * @param callable|string|PipelineInterface|array $stages
+     *
+     * @throws \Moon\Core\Exception\InvalidArgumentException
+     */
     public function __construct(string $verb, string $pattern, $stages = null)
     {
-        $this->verb = strtoupper($verb);
+        $verb = strtoupper($verb);
+        if (!in_array($verb, self::VALID_VERBS, true)) {
+            throw new InvalidArgumentException("The verb: $verb is not a valid http verb");
+        }
+        $this->verb = $verb;
         $this->pattern = $pattern;
         if ($stages !== null) {
             $this->pipe($stages);
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function matchBy(Matchable $matchable): bool
     {
-        if ($matchable->match(['verb' => $this->verb, 'pattern' => $this->pattern])) { // Implement matching logic here
+        // TODO Implement matching logic here
+        if ($matchable->match(['verb' => $this->verb, 'pattern' => $this->pattern])) {
             return true;
         }
 

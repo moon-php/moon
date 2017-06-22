@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Matchable;
+namespace Moon\Core\Matchable;
 
 use Psr\Http\Message\RequestInterface;
 
 class RequestMatchable implements Matchable
 {
     /**
-     * @var RequestInterface
+     * @var RequestInterface $request
      */
-    private $request;
+    protected $request;
 
     /**
      * RequestMatchable constructor.
+     *
      * @param RequestInterface $request
      */
     public function __construct(RequestInterface $request)
@@ -22,6 +23,9 @@ class RequestMatchable implements Matchable
         $this->request = $request;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function match(array $criteria): bool
     {
         // TODO implement real match

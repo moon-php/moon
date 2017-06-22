@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
-use App\Core\Matchable\RequestMatchable;
 use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Collection\HttpPipelineCollectionInterface;
+use Moon\Core\Exception\InvalidArgumentException;
+use Moon\Core\Matchable\RequestMatchable;
+use Moon\Core\Matchable\StringMatchable;
 use Moon\Core\Pipeline\AbstractPipeline;
+use Moon\Core\Pipeline\HttpPipeline;
 use Moon\Core\Pipeline\MatchablePipelineInterface;
 use Moon\Core\Pipeline\PipelineInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
     /**
-     * @var ContainerInterface
+     * @var ContainerInterface $container
      */
-    private $container;
+    protected $container;
 
+    /**
+     * App constructor.
+     *
+     * @param ContainerInterface $container
+     */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -30,34 +36,28 @@ class App extends AbstractPipeline implements PipelineInterface
 
     /**
      * TODO Refactor this huge method
+     * Run the web application, and return a Response
+     *
      * @param HttpPipelineCollectionInterface $pipelines
      *
      * @return ResponseInterface
-     * @throws \InvalidArgumentException
+     *
+     * @throws InvalidArgumentException
      */
     public function runWeb(HttpPipelineCollectionInterface $pipelines): ResponseInterface
     {
-        try {
-            $request = $this->container->get('request');
-        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $e) {
-            throw new \InvalidArgumentException('Request is required in the container for web application'); // TODO use custom exception
-        }
-        if (!$request instanceof RequestInterface) {
-            throw new \InvalidArgumentException('Request must be a valid ' . RequestInterface::class . ' instance'); // TODO use custom exception
-        }
+        $request = $this->container->get('request');
+        $response = $this->container->get('response');
 
-        try {
-            $response = $this->container->get('response');
-        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $e) {
-            throw new \InvalidArgumentException('Response is required in the container for web application'); // TODO use custom exception
+        if (!$request instanceof RequestInterface) {
+            throw new InvalidArgumentException('Request must be a valid ' . RequestInterface::class . ' instance');
         }
         if (!$response instanceof ResponseInterface) {
-            throw new \InvalidArgumentException('Response must be a valid ' . ResponseInterface::class . ' instance'); // TODO use custom exception
+            throw new InvalidArgumentException('Response must be a valid ' . ResponseInterface::class . ' instance');
         }
 
         $matchableRequest = new RequestMatchable($request);
-
-        /** @var MatchablePipelineInterface $pipeline TODO Add collections */
+        /** @var HttpPipeline $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableRequest)) {
                 $pipelineResponse = $this->processStages(array_merge($this->stages(), $pipeline->stages()));
@@ -83,13 +83,35 @@ class App extends AbstractPipeline implements PipelineInterface
         return $response->withStatus(500);
     }
 
+    /**
+     * Run the cli application
+     *
+     * @param CliPipelineCollectionInterface $pipelines
+     *
+     * @return void
+     */
     public function runCli(CliPipelineCollectionInterface $pipelines): void
     {
+        $string = 'from Terminal';
+        $matchableString = new StringMatchable($string);
 
+        /** @var MatchablePipelineInterface $pipeline */
+        foreach ($pipelines as $pipeline) {
+            if ($pipeline->matchBy($matchableString)) {
+                $this->processStages(array_merge($this->stages(), $pipeline->stages()));
+            }
+        }
     }
 
+    /**
+     * Handle all the passed stages
+     *
+     * @param array $stages
+     *
+     * @return ResponseInterface|string|void
+     */
     private function processStages(array $stages)
     {
-
+        // TODO Implement
     }
 }

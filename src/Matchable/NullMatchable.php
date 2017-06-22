@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Matchable;
+namespace Moon\Core\Matchable;
 
 class NullMatchable implements Matchable
 {
+    /**
+     * {@inheritdoc}
+     */
     public function match(array $criteria): bool
     {
         return true;
