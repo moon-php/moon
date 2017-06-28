@@ -14,6 +14,11 @@ class RequestMatchable implements Matchable
     protected $request;
 
     /**
+     * @var bool
+     */
+    protected $patternMatched = false;
+
+    /**
      * RequestMatchable constructor.
      *
      * @param RequestInterface $request
@@ -25,10 +30,26 @@ class RequestMatchable implements Matchable
 
     /**
      * {@inheritdoc}
+     * TODO implement real match
      */
     public function match(array $criteria): bool
     {
-        // TODO implement real match
-        return $criteria['verb'] === $this->request->getMethod() && $criteria['pattern'] === $this->request->getUri();
+        if ($criteria['pattern'] !== $this->request->getUri()) {
+
+            return false;
+        }
+        $this->patternMatched = true;
+
+        return $criteria['verb'] === $this->request->getMethod();
+    }
+
+    /**
+     * Return true if a request match a valid pattern but an invalid verb, false otherwise
+     *
+     * @return bool
+     */
+    public function isPatternMatched(): bool
+    {
+        return $this->patternMatched;
     }
 }

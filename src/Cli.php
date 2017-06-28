@@ -11,7 +11,7 @@ use Moon\Core\Pipeline\CliPipeline;
 class Cli
 {
     /**
-     * @var array $cliPipelines
+     * @var CliPipeline[] $cliPipelines
      */
     protected $cliPipelines = [];
 

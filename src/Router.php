@@ -11,7 +11,7 @@ use Moon\Core\Pipeline\HttpPipeline;
 class Router
 {
     /**
-     * @var array $httpPipelines
+     * @var HttpPipeline[] $httpPipelines
      */
     protected $httpPipelines = [];
 

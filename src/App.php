@@ -6,6 +6,7 @@ namespace Moon\Core;
 
 use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Collection\HttpPipelineCollectionInterface;
+use Moon\Core\Exception\Exception;
 use Moon\Core\Exception\InvalidArgumentException;
 use Moon\Core\Matchable\RequestMatchable;
 use Moon\Core\Matchable\StringMatchable;
@@ -34,8 +35,13 @@ class App extends AbstractPipeline implements PipelineInterface
         $this->container = $container;
     }
 
+    ####################################################################################################################
+    ####################################################################################################################
+    # WEB
+    ####################################################################################################################
+    ####################################################################################################################
+
     /**
-     * TODO Refactor this huge method
      * Run the web application, and return a Response
      *
      * @param HttpPipelineCollectionInterface $pipelines
@@ -70,6 +76,39 @@ class App extends AbstractPipeline implements PipelineInterface
             }
         }
 
+        if ($methodNotAllowedResponse = $this->handleMethodNotAllowedResponse($response, $matchableRequest)) {
+            return $methodNotAllowedResponse;
+        }
+
+        if ($routeNotFoundResponse = $this->handleNotFoundResponse($response)) {
+            return $routeNotFoundResponse;
+        }
+
+        /** @var ResponseInterface $response */
+        return $response->withStatus(500);
+    }
+
+    /**
+     * Handle all the passed stages
+     *
+     * @param array $stages
+     *
+     * @return ResponseInterface|string
+     */
+    protected function processStages(array $stages)
+    {
+        // TODO Implement logic here
+    }
+
+    /**
+     * Return a Response for "not found" status
+     *
+     * @param ResponseInterface $response
+     *
+     * @return null|ResponseInterface
+     */
+    private function handleNotFoundResponse(ResponseInterface $response):?ResponseInterface
+    {
         if (!$this->container->has('notFoundHandler')) {
             return $response->withStatus(404);
         }
@@ -79,9 +118,42 @@ class App extends AbstractPipeline implements PipelineInterface
         if ($notFoundHandler instanceof \Closure) {
             return $notFoundHandler();
         }
-        /** @var ResponseInterface $response */
-        return $response->withStatus(500);
+
+        return null;
     }
+
+    /**
+     * Return a Response for "method not allowed" status
+     *
+     * @param ResponseInterface $response
+     * @param RequestMatchable $requestMatchable
+     *
+     * @return null|ResponseInterface
+     */
+    private function handleMethodNotAllowedResponse(ResponseInterface $response, RequestMatchable $requestMatchable):?ResponseInterface
+    {
+        if (!$requestMatchable->isPatternMatched()) {
+            return null;
+        }
+
+        if (!$this->container->has('methodNotAllowedHandler')) {
+            return $response->withStatus(405);
+        }
+
+        $notFoundHandler = $this->container->get('methodNotAllowedHandler');
+
+        if ($notFoundHandler instanceof \Closure) {
+            return $notFoundHandler();
+        }
+
+        return null;
+    }
+
+    ####################################################################################################################
+    ####################################################################################################################
+    # CLI
+    ####################################################################################################################
+    ####################################################################################################################
 
     /**
      * Run the cli application
@@ -92,26 +164,20 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function runCli(CliPipelineCollectionInterface $pipelines): void
     {
-        $string = 'from Terminal';
-        $matchableString = new StringMatchable($string);
+        $argument = $this->container->get('cliArguments');
+
+        $matchableString = new StringMatchable($argument);
 
         /** @var MatchablePipelineInterface $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableString)) {
-                $this->processStages(array_merge($this->stages(), $pipeline->stages()));
+                $this->processCliStages(array_merge($this->stages(), $pipeline->stages()), $argument);
             }
         }
     }
 
-    /**
-     * Handle all the passed stages
-     *
-     * @param array $stages
-     *
-     * @return ResponseInterface|string|void
-     */
-    private function processStages(array $stages)
+    protected function processCliStages(array $stages, $payload): void
     {
-        // TODO Implement
+        // TODO implement logic here
     }
 }
