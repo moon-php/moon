@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Moon\Core\Matchable;
 
-interface Matchable
+interface MatchableInterface
 {
     /**
      * Return true if a matchable object is matched by criteria

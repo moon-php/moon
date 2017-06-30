@@ -6,7 +6,7 @@ namespace Moon\Core\Matchable;
 
 use Psr\Http\Message\RequestInterface;
 
-class RequestMatchable implements Matchable
+class RequestMatchable implements MatchableInterface
 {
     /**
      * @var RequestInterface $request

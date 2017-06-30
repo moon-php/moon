@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Moon\Core\Pipeline;
 
 use Moon\Core\Exception\InvalidArgumentException;
-use Moon\Core\Matchable\Matchable;
+use Moon\Core\Matchable\MatchableInterface;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
@@ -49,7 +49,7 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
     /**
      * {@inheritdoc}
      */
-    public function matchBy(Matchable $matchable): bool
+    public function matchBy(MatchableInterface $matchable): bool
     {
         // TODO Implement matching logic here
         if ($matchable->match(['verb' => $this->verb, 'pattern' => $this->pattern])) {

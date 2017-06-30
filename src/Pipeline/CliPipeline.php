@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Moon\Core\Pipeline;
 
-use Moon\Core\Matchable\Matchable;
+use Moon\Core\Matchable\MatchableInterface;
 
 class CliPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
@@ -30,7 +30,7 @@ class CliPipeline extends AbstractPipeline implements MatchablePipelineInterface
     /**
      * {@inheritdoc}
      */
-    public function matchBy(Matchable $matchable): bool
+    public function matchBy(MatchableInterface $matchable): bool
     {
         if ($matchable->match([$this->pattern])) { // Implement matching logic here
             return true;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Moon\Core\Matchable;
 
-class StringMatchable implements Matchable
+class StringMatchable implements MatchableInterface
 {
     /**
      * @var string $pattern
