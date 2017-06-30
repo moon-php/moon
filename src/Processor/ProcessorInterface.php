@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 interface ProcessorInterface
 {
     /**
-     *
+     * Process all the stages
      *
      * @param array $stages
      * @param mixed $argument

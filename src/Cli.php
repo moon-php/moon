@@ -25,9 +25,7 @@ class Cli
      */
     public function command(string $pattern, array $stages): void
     {
-        $cliPipeline = new CliPipeline($pattern);
-        $cliPipeline->pipe($stages);
-        $this->cliPipelines[] = $cliPipeline;
+        $this->cliPipelines[] = new CliPipeline($pattern, $stages);
     }
 
     /**
