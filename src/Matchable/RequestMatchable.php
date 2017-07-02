@@ -34,7 +34,7 @@ class RequestMatchable implements MatchableInterface
      */
     public function match(array $criteria): bool
     {
-        if ($criteria['pattern'] !== $this->request->getUri()) {
+        if ($criteria['pattern'] !== $this->request->getUri()->getPath()) {
 
             return false;
         }

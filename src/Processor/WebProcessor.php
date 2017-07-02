@@ -71,13 +71,13 @@ class WebProcessor implements ProcessorInterface
         // If there's not next stage in the stack, return the result for this one
         if ($nextStage === false && is_callable($currentStage)) {
 
-            return $currentStage($args ?: $this->container->get('request'));
+            return $currentStage($args ?: $this->container->get('moon.request'));
         }
 
         // Process the current stage, and proceed to the stack
         if (is_callable($currentStage)) {
 
-            return $this->processStages($stages, $currentStage($args ?: $this->container->get('request')));
+            return $this->processStages($stages, $currentStage($args ?: $this->container->get('moon.request')));
         }
 
         throw new Exception("The stage '$currentStage' can't be handled");
@@ -93,7 +93,7 @@ class WebProcessor implements ProcessorInterface
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      */
-    public function handleDelegate(DelegateInterface $delegate, $args): ResponseInterface
+    protected function handleDelegate(DelegateInterface $delegate, $args): ResponseInterface
     {
         // If $args is a instance of the request, use it for process the middleware
         // Otherwise use the one into the container
@@ -102,7 +102,7 @@ class WebProcessor implements ProcessorInterface
         }
 
         // Return the response
-        return $delegate->process($request ?? $this->container->get('request'));
+        return $delegate->process($request ?? $this->container->get('moon.request'));
     }
 
     /**
@@ -116,7 +116,7 @@ class WebProcessor implements ProcessorInterface
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      */
-    public function handleMiddleware(MiddlewareInterface $currentStage, DelegateInterface $delegate, $args): ResponseInterface
+    protected function handleMiddleware(MiddlewareInterface $currentStage, DelegateInterface $delegate, $args): ResponseInterface
     {
         // If $args is a instance of the request, use it for process the middleware
         // Otherwise use the one into the container
@@ -125,6 +125,6 @@ class WebProcessor implements ProcessorInterface
         }
 
         // Return the response if there's no more stage to execute, otherwise continue
-        return $currentStage->process($request ?? $this->container->get('request'), $delegate);
+        return $currentStage->process($request ?? $this->container->get('moon.request'), $delegate);
     }
 }

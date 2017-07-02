@@ -38,7 +38,7 @@ class CliProcessor implements ProcessorInterface
      */
     public function processStages(array $stages, $args = null): void
     {
-        $payload = $this->container->get('input');
+        $payload = $this->container->get('moon.input');
 
         foreach ($stages as $stage) {
 

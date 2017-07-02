@@ -14,5 +14,10 @@
       "name": "Damiano Petrungaro",
       "email": "damianopetrungaro@gmail.com"
     }
-  ]
+  ],
+  "autoload": {
+    "psr-4": {
+      "Moon\\Core\\": "src/"
+    }
+  }
 }

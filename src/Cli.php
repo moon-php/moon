@@ -13,7 +13,17 @@ class Cli
     /**
      * @var CliPipeline[] $cliPipelines
      */
-    protected $cliPipelines = [];
+    private $cliPipelines = [];
+
+    /**
+     * @var string
+     */
+    private $prefix;
+
+    public function __construct(string $prefix = '')
+    {
+        $this->prefix = $prefix;
+    }
 
     /**
      * Add a command to be handled by the application
@@ -25,7 +35,7 @@ class Cli
      */
     public function command(string $pattern, array $stages): void
     {
-        $this->cliPipelines[] = new CliPipeline($pattern, $stages);
+        $this->cliPipelines[] = new CliPipeline($this->prefix . $pattern, $stages);
     }
 
     /**

@@ -26,6 +26,8 @@ abstract class AbstractPipeline
 
         if (!is_array($stages)) {
             $this->stages[] = $stages;
+
+            return;
         }
 
         foreach ($stages as $stage) {

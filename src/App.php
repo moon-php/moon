@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
-
 use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Collection\HttpPipelineCollectionInterface;
 use Moon\Core\Exception\InvalidArgumentException;
@@ -20,6 +19,7 @@ use Moon\Core\Processor\WebProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
@@ -49,23 +49,25 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @param HttpPipelineCollectionInterface $pipelines
      *
-     * @return ResponseInterface
-     *
      * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function runWeb(HttpPipelineCollectionInterface $pipelines): ResponseInterface
+    public function runWeb(HttpPipelineCollectionInterface $pipelines): void
     {
-        $request = $this->container->get('request');
-        $response = $this->container->get('response');
-        $processor = $this->container->has('webProcessor') ? $this->container->get('webProcessor') : $this->createWebProcessor();
+        $request = $this->container->get('moon.request');
+        $response = $this->container->get('moon.response');
+        $stream = $this->container->get('moon.stream');
+        $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : $this->createWebProcessor();
 
         if (!$request instanceof ServerRequestInterface) {
             throw new InvalidArgumentException('Request must be a valid ' . ServerRequestInterface::class . ' instance');
         }
         if (!$response instanceof ResponseInterface) {
             throw new InvalidArgumentException('Response must be a valid ' . ResponseInterface::class . ' instance');
+        }
+        if (!$stream instanceof StreamInterface) {
+            throw new InvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
         }
         if (!$processor instanceof ProcessorInterface) {
             throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
@@ -79,27 +81,73 @@ class App extends AbstractPipeline implements PipelineInterface
                 $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()));
 
                 if ($pipelineResponse instanceof ResponseInterface) {
+                    $this->sendResponse($pipelineResponse);
 
-                    return $pipelineResponse;
+                    return;
                 }
 
-                // TODO create stream and handle the response
-                return $response->withBody($pipelineResponse);
+                $stream->write($pipelineResponse);
+                $this->sendResponse($response->withBody($stream));
+
+                return;
             }
         }
 
         if ($methodNotAllowedResponse = $this->handleMethodNotAllowedResponse($response, $matchableRequest)) {
+            $this->sendResponse($methodNotAllowedResponse);
 
-            return $methodNotAllowedResponse;
+            return;
         }
 
         if ($routeNotFoundResponse = $this->handleNotFoundResponse($response)) {
+            $this->sendResponse($routeNotFoundResponse);
 
-            return $routeNotFoundResponse;
+            return;
         }
 
         /** @var ResponseInterface $response */
-        return $response->withStatus(500);
+        $this->sendResponse($response->withStatus(500));
+    }
+
+    /**
+     * Send headers and body to the client
+     *
+     * @param ResponseInterface $response
+     *
+     * @return void
+     */
+    protected function sendResponse(ResponseInterface $response): void
+    {
+        // Send all the headers
+        foreach ($response->getHeaders() as $headerName => $headerValues) {
+            /** @var string[] $headerValues */
+            foreach ($headerValues as $headerValue) {
+                header("$headerName: $headerValue", false);
+            }
+        }
+
+        // Get the body, rewind it if possible
+        $body = $response->getBody();
+        if ($body->isSeekable()) {
+            $body->rewind();
+        }
+
+        // If the body is not readable do not send any body to the client
+        if (!$body->isReadable()) {
+            return;
+        }
+
+        // Send the body (by chunk if specified in the container)
+        if ($this->container->has('moon.chunkSize')) {
+            $chunk = $this->container->has('moon.chunkSize');
+            while (!$body->eof()) {
+                echo $body->read($chunk);
+            }
+
+            return;
+        }
+
+        echo $body->getContents();
     }
 
     /**
@@ -113,12 +161,12 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     private function handleNotFoundResponse(ResponseInterface $response):?ResponseInterface
     {
-        if (!$this->container->has('notFoundHandler')) {
+        if (!$this->container->has('moon.notFoundHandler')) {
 
             return $response->withStatus(404);
         }
 
-        $notFoundHandler = $this->container->get('notFoundHandler');
+        $notFoundHandler = $this->container->get('moon.notFoundHandler');
 
         if ($notFoundHandler instanceof \Closure) {
 
@@ -145,12 +193,12 @@ class App extends AbstractPipeline implements PipelineInterface
             return null;
         }
 
-        if (!$this->container->has('methodNotAllowedHandler')) {
+        if (!$this->container->has('moon.methodNotAllowedHandler')) {
 
             return $response->withStatus(405);
         }
 
-        $notFoundHandler = $this->container->get('methodNotAllowedHandler');
+        $notFoundHandler = $this->container->get('moon.methodNotAllowedHandler');
 
         if ($notFoundHandler instanceof \Closure) {
 
@@ -170,11 +218,11 @@ class App extends AbstractPipeline implements PipelineInterface
         return new WebProcessor($this->container);
     }
 
-####################################################################################################################
-####################################################################################################################
-# CLI
-####################################################################################################################
-####################################################################################################################
+    ####################################################################################################################
+    ####################################################################################################################
+    # CLI
+    ####################################################################################################################
+    ####################################################################################################################
 
     /**
      * Run the cli application
@@ -189,8 +237,8 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function runCli(CliPipelineCollectionInterface $pipelines): void
     {
-        $input = $this->container->get('input');
-        $processor = $this->container->has('cliProcessor') ? $this->container->get('cliProcessor') : $this->createCliProcessor();
+        $input = $this->container->get('moon.input');
+        $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : $this->createCliProcessor();
 
         if (!$input instanceof InputInterface) {
             throw new InvalidArgumentException('input must be a valid ' . InputInterface::class . ' instance');

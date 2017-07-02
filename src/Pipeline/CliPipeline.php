@@ -32,7 +32,9 @@ class CliPipeline extends AbstractPipeline implements MatchablePipelineInterface
      */
     public function matchBy(MatchableInterface $matchable): bool
     {
-        if ($matchable->match([$this->pattern])) { // Implement matching logic here
+        // TODO Implement matching logic here
+        if ($matchable->match([$this->pattern])) {
+
             return true;
         }
 

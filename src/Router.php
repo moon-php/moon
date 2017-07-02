@@ -13,97 +13,112 @@ class Router
     /**
      * @var HttpPipeline[] $httpPipelines
      */
-    protected $httpPipelines = [];
+    private $httpPipelines = [];
+
+    /**
+     * @var string
+     */
+    private $prefix;
+
+    /**
+     * Router constructor.
+     *
+     * @param string $prefix
+     */
+    public function __construct(string $prefix = '')
+    {
+        $this->prefix = $prefix;
+    }
 
     /**
      * Add a 'GET' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function get(string $pattern, array $stages): void
+    public function get(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('GET', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('GET', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'POST' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function post(string $pattern, array $stages): void
+    public function post(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('POST', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('POST', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'PUT' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function put(string $pattern, array $stages): void
+    public function put(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('PUT', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('PUT', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'PATCH' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function patch(string $pattern, array $stages): void
+    public function patch(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('PATCH', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('PATCH', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'DELETE' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function delete(string $pattern, array $stages): void
+    public function delete(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('DELETE', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('DELETE', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'OPTIONS' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function options(string $pattern, array $stages): void
+    public function options(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('OPTIONS', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('OPTIONS', $this->prefix . $pattern, $stages);
     }
 
     /**
      * Add a 'HEAD' route to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param array|string|callable $stages
      *
      * @return void
      */
-    public function head(string $pattern, array $stages): void
+    public function head(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('HEAD', $pattern, $stages);
+        $this->httpPipelines[] = new HttpPipeline('HEAD', $this->prefix . $pattern, $stages);
     }
 
     /**
