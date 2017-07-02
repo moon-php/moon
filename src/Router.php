@@ -11,9 +11,9 @@ use Moon\Core\Pipeline\HttpPipeline;
 class Router
 {
     /**
-     * @var HttpPipeline[] $httpPipelines
+     * @var HttpPipelineArrayCollection $httpPipelinesCollection
      */
-    private $httpPipelines = [];
+    private $httpPipelinesCollection;
 
     /**
      * @var string
@@ -28,6 +28,7 @@ class Router
     public function __construct(string $prefix = '')
     {
         $this->prefix = $prefix;
+        $this->httpPipelinesCollection = new HttpPipelineArrayCollection();
     }
 
     /**
@@ -40,7 +41,7 @@ class Router
      */
     public function get(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('GET', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('GET', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -53,7 +54,7 @@ class Router
      */
     public function post(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('POST', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('POST', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -66,7 +67,7 @@ class Router
      */
     public function put(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('PUT', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('PUT', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -79,7 +80,7 @@ class Router
      */
     public function patch(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('PATCH', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('PATCH', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -92,7 +93,7 @@ class Router
      */
     public function delete(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('DELETE', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('DELETE', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -105,7 +106,7 @@ class Router
      */
     public function options(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('OPTIONS', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('OPTIONS', $this->prefix . $pattern, $stages));
     }
 
     /**
@@ -118,7 +119,24 @@ class Router
      */
     public function head(string $pattern, $stages): void
     {
-        $this->httpPipelines[] = new HttpPipeline('HEAD', $this->prefix . $pattern, $stages);
+        $this->httpPipelinesCollection->add(new HttpPipeline('HEAD', $this->prefix . $pattern, $stages));
+    }
+
+    /**
+     * Add multiple verb to a pattern and stages
+     *
+     * @param string $pattern
+     * @param array $verbs
+     * @param array|string|callable $stages
+     *
+     * @return void
+     */
+    public function map(string $pattern, array $verbs, $stages): void
+    {
+        foreach ($verbs as $verb) {
+            $verb = strtolower($verb);
+            $this->$verb($pattern, $stages);
+        }
     }
 
     /**
@@ -128,6 +146,6 @@ class Router
      */
     public function pipelines(): HttpPipelineCollectionInterface
     {
-        return new HttpPipelineArrayCollection($this->httpPipelines);
+        return $this->httpPipelinesCollection;
     }
 }

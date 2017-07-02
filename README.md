@@ -21,7 +21,7 @@ $httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex');
 $httpProductPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 
 // Or Router (is a syntax sugar for web api wrap a HttpPipeline Object)
-$router = new \Moon\Core\Router();
+$router = new \Moon\Core\Router('regex');
 $router->get('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 $router->post('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
 // run

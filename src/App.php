@@ -49,6 +49,8 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @param HttpPipelineCollectionInterface $pipelines
      *
+     * @return void
+     *
      * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws InvalidArgumentException
@@ -57,7 +59,6 @@ class App extends AbstractPipeline implements PipelineInterface
     {
         $request = $this->container->get('moon.request');
         $response = $this->container->get('moon.response');
-        $stream = $this->container->get('moon.stream');
         $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : $this->createWebProcessor();
 
         if (!$request instanceof ServerRequestInterface) {
@@ -65,9 +66,6 @@ class App extends AbstractPipeline implements PipelineInterface
         }
         if (!$response instanceof ResponseInterface) {
             throw new InvalidArgumentException('Response must be a valid ' . ResponseInterface::class . ' instance');
-        }
-        if (!$stream instanceof StreamInterface) {
-            throw new InvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
         }
         if (!$processor instanceof ProcessorInterface) {
             throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
@@ -84,6 +82,11 @@ class App extends AbstractPipeline implements PipelineInterface
                     $this->sendResponse($pipelineResponse);
 
                     return;
+                }
+
+                $stream = $this->container->get('moon.stream');
+                if (!$stream instanceof StreamInterface) {
+                    throw new InvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
                 }
 
                 $stream->write($pipelineResponse);

@@ -11,9 +11,9 @@ use Moon\Core\Pipeline\CliPipeline;
 class Cli
 {
     /**
-     * @var CliPipeline[] $cliPipelines
+     * @var CliPipelineArrayCollection $cliPipelinesCollection
      */
-    private $cliPipelines = [];
+    private $cliPipelinesCollection;
 
     /**
      * @var string
@@ -23,6 +23,7 @@ class Cli
     public function __construct(string $prefix = '')
     {
         $this->prefix = $prefix;
+        $this->cliPipelinesCollection = new CliPipelineArrayCollection();
     }
 
     /**
@@ -35,7 +36,7 @@ class Cli
      */
     public function command(string $pattern, array $stages): void
     {
-        $this->cliPipelines[] = new CliPipeline($this->prefix . $pattern, $stages);
+        $this->cliPipelinesCollection->add(new CliPipeline($this->prefix . $pattern, $stages));
     }
 
     /**
@@ -45,6 +46,6 @@ class Cli
      */
     public function pipelines(): CliPipelineCollectionInterface
     {
-        return new CliPipelineArrayCollection($this->cliPipelines);
+        return $this->cliPipelinesCollection;
     }
 }
