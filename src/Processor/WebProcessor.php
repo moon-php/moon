@@ -9,7 +9,6 @@ use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Moon\Core\Exception\Exception;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
 class WebProcessor implements ProcessorInterface
 {
@@ -32,7 +31,7 @@ class WebProcessor implements ProcessorInterface
      * Handle all the passed stages
      *
      * @param array $stages
-     * @param mixed $args
+     * @param mixed $payload
      *
      * @return ResponseInterface|string
      *
@@ -40,11 +39,14 @@ class WebProcessor implements ProcessorInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Moon\Core\Exception\Exception
      */
-    public function processStages(array $stages, $args = null)
+    public function processStages(array $stages, $payload = null)
     {
         // Take the stage to handle and the next one (if exists)
         $currentStage = array_shift($stages);
         $nextStage = current($stages);
+
+        // If payload has never been passed, get the default
+        $payload = ($payload === self::EMPTY_PAYLOAD) ? $this->container->get('moon.request') : $payload;
 
         // If is a string get the instance in the container
         if (is_string($currentStage)) {
@@ -54,10 +56,10 @@ class WebProcessor implements ProcessorInterface
         // If the current stage is a Delegate use it and return the Response
         if ($currentStage instanceof DelegateInterface) {
 
-            return $this->handleDelegate($currentStage, $args);
+            return $currentStage->process($payload);
         }
 
-        // If the current stage is a Middleware and the next one is a Delegate use it and return the Response
+        // If the current stage is a Middleware and the next one is a Delegate, use it and return the Response
         if ($currentStage instanceof MiddlewareInterface && in_array(DelegateInterface::class, class_implements($nextStage), true)) {
 
             // Use the next stage as Delegate
@@ -65,66 +67,21 @@ class WebProcessor implements ProcessorInterface
                 $nextStage = $this->container->get($nextStage);
             }
 
-            return $this->handleMiddleware($currentStage, $nextStage, $args);
+            return $currentStage->process($payload, $nextStage);
         }
 
         // If there's not next stage in the stack, return the result for this one
         if ($nextStage === false && is_callable($currentStage)) {
 
-            return $currentStage($args ?: $this->container->get('moon.request'));
+            return $currentStage($payload);
         }
 
         // Process the current stage, and proceed to the stack
         if (is_callable($currentStage)) {
 
-            return $this->processStages($stages, $currentStage($args ?: $this->container->get('moon.request')));
+            return $this->processStages($stages, $currentStage($payload));
         }
 
         throw new Exception("The stage '$currentStage' can't be handled");
-    }
-
-    /**
-     * Return a ResponseInterface form a DelegateInterface
-     *
-     * @param DelegateInterface $delegate
-     * @param ServerRequestInterface|mixed $args
-     *
-     * @return ResponseInterface
-     *
-     * @throws \Psr\Container\ContainerExceptionInterface
-     */
-    protected function handleDelegate(DelegateInterface $delegate, $args): ResponseInterface
-    {
-        // If $args is a instance of the request, use it for process the middleware
-        // Otherwise use the one into the container
-        if ($args instanceof ServerRequestInterface) {
-            $request = $args;
-        }
-
-        // Return the response
-        return $delegate->process($request ?? $this->container->get('moon.request'));
-    }
-
-    /**
-     * Return a ResponseInterface from a MiddlewareInterface
-     *
-     * @param MiddlewareInterface $currentStage
-     * @param DelegateInterface $delegate
-     * @param ServerRequestInterface|mixed $args
-     *
-     * @return ResponseInterface
-     *
-     * @throws \Psr\Container\ContainerExceptionInterface
-     */
-    protected function handleMiddleware(MiddlewareInterface $currentStage, DelegateInterface $delegate, $args): ResponseInterface
-    {
-        // If $args is a instance of the request, use it for process the middleware
-        // Otherwise use the one into the container
-        if ($args instanceof ServerRequestInterface) {
-            $request = $args;
-        }
-
-        // Return the response if there's no more stage to execute, otherwise continue
-        return $currentStage->process($request ?? $this->container->get('moon.request'), $delegate);
     }
 }

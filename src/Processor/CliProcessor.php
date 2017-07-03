@@ -28,7 +28,7 @@ class CliProcessor implements ProcessorInterface
      * Handle all the passed stages
      *
      * @param array $stages
-     * @param mixed $args
+     * @param mixed $payload
      *
      * @return void
      *
@@ -36,22 +36,25 @@ class CliProcessor implements ProcessorInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Moon\Core\Exception\Exception
      */
-    public function processStages(array $stages, $args = null): void
+    public function processStages(array $stages, $payload = null): void
     {
-        $payload = $this->container->get('moon.input');
+        // Take the stage to handle and the next one (if exists)
+        $currentStage = array_shift($stages);
+        $nextStage = current($stages);
 
-        foreach ($stages as $stage) {
+        if (is_string($currentStage)) {
+            $currentStage = $this->container->get($currentStage);
+        }
 
-            if (is_string($stage)) {
-                $stage = $this->container->get($stage);
-            }
+        if (!is_callable($currentStage)) {
+            throw new Exception("The stage '$currentStage' can't be handled");
+        }
 
-            if (is_callable($stages)) {
-                $payload = $stage($payload);
-                continue;
-            }
+        $payload = ($payload === self::EMPTY_PAYLOAD) ? $this->container->get('moon.input') : $payload;
+        $payload = $currentStage($payload);
 
-            throw new Exception("The stage '$stage' can't be handled");
+        if ($nextStage !== false) {
+            $this->processStages($stages, $payload);
         }
     }
 }
