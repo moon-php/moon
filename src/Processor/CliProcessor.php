@@ -50,7 +50,6 @@ class CliProcessor implements ProcessorInterface
             throw new Exception("The stage '$currentStage' can't be handled");
         }
 
-        $payload = ($payload === self::EMPTY_PAYLOAD) ? $this->container->get('moon.input') : $payload;
         $payload = $currentStage($payload);
 
         if ($nextStage !== false) {

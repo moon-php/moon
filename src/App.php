@@ -76,7 +76,7 @@ class App extends AbstractPipeline implements PipelineInterface
         /** @var HttpPipeline $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableRequest)) {
-                $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()), ProcessorInterface::EMPTY_PAYLOAD);
+                $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $request);
 
                 if ($pipelineResponse instanceof ResponseInterface) {
                     $this->sendResponse($pipelineResponse);
@@ -255,7 +255,7 @@ class App extends AbstractPipeline implements PipelineInterface
         /** @var MatchablePipelineInterface $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableString)) {
-                $processor->processStages(array_merge($this->stages(), $pipeline->stages()), ProcessorInterface::EMPTY_PAYLOAD);
+                $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $input);
             }
         }
     }

@@ -45,9 +45,6 @@ class WebProcessor implements ProcessorInterface
         $currentStage = array_shift($stages);
         $nextStage = current($stages);
 
-        // If payload has never been passed, get the default
-        $payload = ($payload === self::EMPTY_PAYLOAD) ? $this->container->get('moon.request') : $payload;
-
         // If is a string get the instance in the container
         if (is_string($currentStage)) {
             $currentStage = $this->container->get($currentStage);
