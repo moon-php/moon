@@ -143,7 +143,7 @@ class App extends AbstractPipeline implements PipelineInterface
 
         // Send the body (by chunk if specified in the container)
         if ($this->container->has('moon.chunkSize')) {
-            $chunk = $this->container->has('moon.chunkSize');
+            $chunk = $this->container->get('moon.chunkSize');
             while (!$body->eof()) {
                 echo $body->read($chunk);
             }
