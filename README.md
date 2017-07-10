@@ -15,15 +15,15 @@ $app->pipe(Fqcn\ClassOne::class);
 ////////////////////////////////////
 ////////////////// Web
 ////////////////////////////////////
-$httpUserPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
-$httpContactPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex', Fqcn\Class::class);
-$httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('method', 'regex');
+$httpUserPipeline = new \Moon\Core\Pipeline\HttpPipeline('POST', '/', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
+$httpContactPipeline = new \Moon\Core\Pipeline\HttpPipeline('GET', '/users/{id::\d+}', Fqcn\Class::class);
+$httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('PUT', '::/users/(?<attributeName>\d+)');
 $httpProductPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 
 // Or Router (is a syntax sugar for web api wrap a HttpPipeline Object)
-$router = new \Moon\Core\Router('regex');
-$router->get('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$router->post('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
+$router = new \Moon\Core\Router('/posts');
+$router->get('/[paginated]', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$router->post('/{id}', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
 // run
 
 $httpPipelineCollection = new \Moon\Core\Collection\HttpPipelineArrayCollection([$httpUserPipeline, $httpContactPipeline]);
@@ -36,11 +36,12 @@ $app->runWeb($httpPipelineCollection);
 ////////////////////////////////////
 ////////////////// Cli
 ////////////////////////////////////
-$cliUserPipeline = new \Moon\Core\Pipeline\CliPipeline('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
-$cliProductPipeline = new \Moon\Core\Pipeline\CliPipeline('regex', Fqcn\ClassOne::class);
+$cliUserPipeline = new \Moon\Core\Pipeline\CliPipeline('migrate', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$cliProductPipeline = new \Moon\Core\Pipeline\CliPipeline('execute-queue', Fqcn\ClassOne::class);
 // Or Cli (is a syntax sugar for command wrap a CliPipeline Object)
-$cliCommand = new \Moon\Core\Cli();
-$cliCommand->command('regex', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$cliCommand = new \Moon\Core\Cli('cache:');
+$cliCommand->command('clear', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
+$cliCommand->command('dump', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 
 // run
 $cliPipelineCollection = new \Moon\Core\Collection\CliPipelineArrayCollection([$cliUserPipeline,$cliProductPipeline]);

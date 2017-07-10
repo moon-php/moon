@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Moon\Core\Matchable;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class RequestMatchable implements MatchableInterface
 {
+    private const REGEX_PREFIX = '::';
+    private const REQUIRED_PLACEHOLDER_REGEX = '~\{(.*?)\}~';
+    private const OPTIONAL_PLACEHOLDER_REGEX = '~\[(.*?)\]~';
+
     /**
-     * @var RequestInterface $request
+     * @var ServerRequestInterface $request
      */
     protected $request;
 
@@ -21,26 +25,43 @@ class RequestMatchable implements MatchableInterface
     /**
      * RequestMatchable constructor.
      *
-     * @param RequestInterface $request
+     * @param ServerRequestInterface $request
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(ServerRequestInterface $request)
     {
         $this->request = $request;
     }
 
     /**
      * {@inheritdoc}
-     * TODO implement real match
      */
     public function match(array $criteria): bool
     {
-        if ($criteria['pattern'] !== $this->request->getUri()->getPath()) {
+        if (strpos($criteria['pattern'], self::REGEX_PREFIX) === 0) {
+            $criteria['pattern'] = substr($criteria['pattern'], 2);
+        } else {
+            $criteria['pattern'] = $this->toRegex($criteria['pattern']);
+        }
 
+        /** @var bool $isPatternMatched */
+        /** @var array $matches */
+        [$isPatternMatched, $matches] = $this->matchByRegex($criteria['pattern'], $this->request->getUri()->getPath());
+
+        if (!$isPatternMatched) {
             return false;
         }
+
         $this->patternMatched = true;
 
-        return $criteria['verb'] === $this->request->getMethod();
+        if ($criteria['verb'] !== $this->request->getMethod()) {
+            return false;
+        }
+
+        foreach ($matches as $name => $value) {
+            $this->request = $this->request->withAttribute($name, $value);
+        }
+
+        return true;
     }
 
     /**
@@ -51,5 +72,78 @@ class RequestMatchable implements MatchableInterface
     public function isPatternMatched(): bool
     {
         return $this->patternMatched;
+    }
+
+    /**
+     * Return the new ServerRequest with the added attributes
+     *
+     * @return ServerRequestInterface
+     */
+    public function requestWithAddedAttributes(): ServerRequestInterface
+    {
+        return $this->request;
+    }
+
+    /**
+     * Return an array made by 2 elements:
+     *  - A boolean value as value for know if the current pattern matches the path
+     *  - An array with key/value as element to add to the request
+     *
+     * @param string $pattern
+     * @param string $path
+     *
+     * @return array
+     */
+    private function matchByRegex(string $pattern, string $path): array
+    {
+        $isPatternMatched = (bool)preg_match_all("~^$pattern$~", $path, $matches);
+
+        if (!$isPatternMatched) {
+            return [$isPatternMatched, []];
+        }
+
+        foreach (array_shift($matches) as $k => $match) {
+            if (is_int($k)) {
+                unset($matches[$k]);
+                continue;
+            }
+
+            $matches[$k] = array_shift($match);
+        }
+
+        return [$isPatternMatched, $matches];
+    }
+
+    /**
+     * Transform a pattern into a regex
+     * // TODO MISSING NESTED OPTIONAL RESOLUTION (Example /users[/[missingNested]])
+     *
+     * @param string $pattern
+     *
+     * @return string
+     */
+    private function toRegex(string $pattern): string
+    {
+        $pattern = preg_replace_callback(self::OPTIONAL_PLACEHOLDER_REGEX, function (array $match = []) {
+            $match = array_pop($match);
+
+            return "($match)?";
+        }, $pattern);
+
+        $pattern = preg_replace_callback(self::REQUIRED_PLACEHOLDER_REGEX, function (array $match = []) {
+
+            $match = array_pop($match);
+            $pos = strpos($match, self::REGEX_PREFIX);
+            if ($pos !== false) {
+                $parameterName = substr($match, 0, $pos);
+                $parameterRegex = substr($match, $pos + 2);
+
+                return "(?<$parameterName>$parameterRegex)";
+            }
+
+            return "(?<$match>[^/]+)";
+        }, $pattern);
+
+        return $pattern;
     }
 }

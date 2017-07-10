@@ -26,7 +26,7 @@ class App extends AbstractPipeline implements PipelineInterface
     /**
      * @var ContainerInterface $container
      */
-    protected $container;
+    private $container;
 
     /**
      * App constructor.
@@ -76,7 +76,11 @@ class App extends AbstractPipeline implements PipelineInterface
         /** @var HttpPipeline $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableRequest)) {
-                $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $request);
+
+                $pipelineResponse = $processor->processStages(
+                    array_merge($this->stages(), $pipeline->stages()),
+                    $matchableRequest->requestWithAddedAttributes()
+                );
 
                 if ($pipelineResponse instanceof ResponseInterface) {
                     $this->sendResponse($pipelineResponse);
