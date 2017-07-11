@@ -7,8 +7,9 @@ namespace Moon\Core;
 use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Collection\HttpPipelineCollectionInterface;
 use Moon\Core\Exception\InvalidArgumentException;
+use Moon\Core\Input\InputInterface;
+use Moon\Core\Matchable\InputMatchable;
 use Moon\Core\Matchable\RequestMatchable;
-use Moon\Core\Matchable\StringMatchable;
 use Moon\Core\Pipeline\AbstractPipeline;
 use Moon\Core\Pipeline\HttpPipeline;
 use Moon\Core\Pipeline\MatchablePipelineInterface;
@@ -254,7 +255,7 @@ class App extends AbstractPipeline implements PipelineInterface
         if (!$processor instanceof ProcessorInterface) {
             throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
         }
-        $matchableString = new StringMatchable($input->toString());
+        $matchableString = new InputMatchable($input);
 
         /** @var MatchablePipelineInterface $pipeline */
         foreach ($pipelines as $pipeline) {

@@ -17,7 +17,8 @@ $app->pipe(Fqcn\ClassOne::class);
 ////////////////////////////////////
 $httpUserPipeline = new \Moon\Core\Pipeline\HttpPipeline('POST', '/', [Fqcn\ClassOne::class,Fqcn\ClassTwo::class]);
 $httpContactPipeline = new \Moon\Core\Pipeline\HttpPipeline('GET', '/users/{id::\d+}', Fqcn\Class::class);
-$httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('PUT', '::/users/(?<attributeName>\d+)');
+$httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('GET', '/users/{id}/edit', Fqcn\Class::class);
+$httpProductPipeline = new \Moon\Core\Pipeline\HttpPipeline('PUT', '::/users/(?<attributeName>\d+)', Fqcn\Class::class);
 $httpProductPipeline->pipe([Fqcn\ClassOne::class,Fqcn\ClassTwo::class,Fqcn\ClassThree::class]);
 
 // Or Router (is a syntax sugar for web api wrap a HttpPipeline Object)

@@ -10,12 +10,12 @@ class RequestMatchable implements MatchableInterface
 {
     private const REGEX_PREFIX = '::';
     private const REQUIRED_PLACEHOLDER_REGEX = '~\{(.*?)\}~';
-    private const OPTIONAL_PLACEHOLDER_REGEX = '~\[(.*?)\]~';
+    private const OPTIONAL_PLACEHOLDER_REGEX = '~\[((?>[^\[\]]+))*\]~';
 
     /**
      * @var ServerRequestInterface $request
      */
-    protected $request;
+    private $request;
 
     /**
      * @var bool
@@ -37,15 +37,16 @@ class RequestMatchable implements MatchableInterface
      */
     public function match(array $criteria): bool
     {
+        // Check if is a regex or transform it
         if (strpos($criteria['pattern'], self::REGEX_PREFIX) === 0) {
-            $criteria['pattern'] = substr($criteria['pattern'], 2);
+            $regex = substr($criteria['pattern'], 2);
         } else {
-            $criteria['pattern'] = $this->toRegex($criteria['pattern']);
+            $regex = $this->toRegex($criteria['pattern']);
         }
 
         /** @var bool $isPatternMatched */
         /** @var array $matches */
-        [$isPatternMatched, $matches] = $this->matchByRegex($criteria['pattern'], $this->request->getUri()->getPath());
+        [$isPatternMatched, $matches] = $this->matchByRegex($regex, $this->request->getUri()->getPath());
 
         if (!$isPatternMatched) {
             return false;
@@ -116,7 +117,6 @@ class RequestMatchable implements MatchableInterface
 
     /**
      * Transform a pattern into a regex
-     * // TODO MISSING NESTED OPTIONAL RESOLUTION (Example /users[/[missingNested]])
      *
      * @param string $pattern
      *
@@ -124,11 +124,9 @@ class RequestMatchable implements MatchableInterface
      */
     private function toRegex(string $pattern): string
     {
-        $pattern = preg_replace_callback(self::OPTIONAL_PLACEHOLDER_REGEX, function (array $match = []) {
-            $match = array_pop($match);
-
-            return "($match)?";
-        }, $pattern);
+        while (preg_match(self::OPTIONAL_PLACEHOLDER_REGEX, $pattern)) {
+            $pattern = preg_replace(self::OPTIONAL_PLACEHOLDER_REGEX, '($1)?', $pattern);
+        }
 
         $pattern = preg_replace_callback(self::REQUIRED_PLACEHOLDER_REGEX, function (array $match = []) {
 
