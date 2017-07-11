@@ -51,9 +51,8 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
      */
     public function matchBy(MatchableInterface $matchable): bool
     {
-        // TODO Implement matching logic here
         if ($matchable->match(['verb' => $this->verb, 'pattern' => $this->pattern])) {
-            
+
             return true;
         }
 
