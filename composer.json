@@ -1,5 +1,5 @@
 {
-  "name": "moon/moon",
+  "name": "moon-php/moon",
   "require": {
     "php": ">=7.1",
     "psr/container": "^1.0",

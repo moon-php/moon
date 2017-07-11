@@ -9,7 +9,7 @@ use Moon\Core\Input\InputInterface;
 class InputMatchable implements MatchableInterface
 {
     /**
-     * @var string $input
+     * @var InputInterface $input
      */
     private $input;
 

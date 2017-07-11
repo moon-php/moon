@@ -59,7 +59,7 @@ class RequestMatchable implements MatchableInterface
         }
 
         foreach ($matches as $name => $value) {
-            $this->request = $this->request->withAttribute($name, $value);
+            $this->request = $this->request->withAttribute($name, $value[0]);
         }
 
         return true;
