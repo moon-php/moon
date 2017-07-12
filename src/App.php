@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
-use Moon\Core\Collection\CliPipelineCollectionInterface;
-use Moon\Core\Collection\HttpPipelineCollectionInterface;
+use Moon\Core\Collection\PipelineCollectionInterface;
 use Moon\Core\Exception\InvalidArgumentException;
 use Moon\Core\Input\Input;
 use Moon\Core\Input\InputInterface;
@@ -49,7 +48,7 @@ class App extends AbstractPipeline implements PipelineInterface
     /**
      * Run the web application, and return a Response
      *
-     * @param HttpPipelineCollectionInterface $pipelines
+     * @param PipelineCollectionInterface $pipelines
      *
      * @return void
      *
@@ -57,7 +56,7 @@ class App extends AbstractPipeline implements PipelineInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function runWeb(HttpPipelineCollectionInterface $pipelines): void
+    public function runWeb(PipelineCollectionInterface $pipelines): void
     {
         $request = $this->container->get('moon.request');
         $response = $this->container->get('moon.response');
@@ -227,7 +226,7 @@ class App extends AbstractPipeline implements PipelineInterface
     /**
      * Run the cli application
      *
-     * @param CliPipelineCollectionInterface $pipelines
+     * @param PipelineCollectionInterface $pipelines
      *
      * @return void
      *
@@ -235,7 +234,7 @@ class App extends AbstractPipeline implements PipelineInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Moon\Core\Exception\InvalidArgumentException
      */
-    public function runCli(CliPipelineCollectionInterface $pipelines): void
+    public function runCli(PipelineCollectionInterface $pipelines): void
     {
         $input = $this->container->has('moon.input') ? $this->container->get('moon.input') : new Input($GLOBALS['argv']);
         $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : new CliProcessor($this->container);
