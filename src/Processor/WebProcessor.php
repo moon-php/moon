@@ -67,16 +67,16 @@ class WebProcessor implements ProcessorInterface
             return $currentStage->process($payload, $nextStage);
         }
 
-        // If there's not next stage in the stack, return the result for this one
-        if ($nextStage === false && is_callable($currentStage)) {
-
-            return $currentStage($payload);
-        }
-
         // Process the current stage, and proceed to the stack
-        if (is_callable($currentStage)) {
+        if ($nextStage !== false && is_callable($currentStage)) {
 
             return $this->processStages($stages, $currentStage($payload));
+        }
+
+        // If there's not next stage in the stack, return the result for this one
+        if (is_callable($currentStage)) {
+
+            return $currentStage($payload);
         }
 
         throw new Exception("The stage '$currentStage' can't be handled");
