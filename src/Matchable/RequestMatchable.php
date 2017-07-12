@@ -18,9 +18,9 @@ class RequestMatchable implements MatchableInterface
     private $request;
 
     /**
-     * @var bool
+     * @var bool $patternMatched
      */
-    protected $patternMatched = false;
+    private $patternMatched = false;
 
     /**
      * RequestMatchable constructor.
@@ -54,7 +54,7 @@ class RequestMatchable implements MatchableInterface
 
         $this->patternMatched = true;
 
-        if ($criteria['verb'] !== $this->request->getMethod()) {
+        if (!in_array($this->request->getMethod(), $criteria['verbs'], true)) {
             return false;
         }
 

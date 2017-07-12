@@ -7,6 +7,7 @@ namespace Moon\Core;
 use Moon\Core\Collection\CliPipelineCollectionInterface;
 use Moon\Core\Collection\HttpPipelineCollectionInterface;
 use Moon\Core\Exception\InvalidArgumentException;
+use Moon\Core\Input\Input;
 use Moon\Core\Input\InputInterface;
 use Moon\Core\Matchable\InputMatchable;
 use Moon\Core\Matchable\RequestMatchable;
@@ -60,7 +61,7 @@ class App extends AbstractPipeline implements PipelineInterface
     {
         $request = $this->container->get('moon.request');
         $response = $this->container->get('moon.response');
-        $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : $this->createWebProcessor();
+        $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : new WebProcessor($this->container);
 
         if (!$request instanceof ServerRequestInterface) {
             throw new InvalidArgumentException('Request must be a valid ' . ServerRequestInterface::class . ' instance');
@@ -156,7 +157,7 @@ class App extends AbstractPipeline implements PipelineInterface
             return;
         }
 
-        echo $body->getContents();
+        echo $body->__toString();
     }
 
     /**
@@ -217,16 +218,6 @@ class App extends AbstractPipeline implements PipelineInterface
         return null;
     }
 
-    /**
-     * Create a default WebProcessor
-     *
-     * @return WebProcessor
-     */
-    private function createWebProcessor(): WebProcessor
-    {
-        return new WebProcessor($this->container);
-    }
-
     ####################################################################################################################
     ####################################################################################################################
     # CLI
@@ -246,8 +237,8 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function runCli(CliPipelineCollectionInterface $pipelines): void
     {
-        $input = $this->container->get('moon.input');
-        $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : $this->createCliProcessor();
+        $input = $this->container->has('moon.input') ? $this->container->get('moon.input') : new Input($GLOBALS['argv']);
+        $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : new CliProcessor($this->container);
 
         if (!$input instanceof InputInterface) {
             throw new InvalidArgumentException('input must be a valid ' . InputInterface::class . ' instance');
@@ -263,15 +254,5 @@ class App extends AbstractPipeline implements PipelineInterface
                 $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $input);
             }
         }
-    }
-
-    /**
-     * Create a default WebProcessor
-     *
-     * @return CliProcessor
-     */
-    private function createCliProcessor(): CliProcessor
-    {
-        return new CliProcessor($this->container);
     }
 }

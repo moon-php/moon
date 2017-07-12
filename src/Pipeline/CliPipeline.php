@@ -11,7 +11,7 @@ class CliPipeline extends AbstractPipeline implements MatchablePipelineInterface
     /**
      * @var string $pattern
      */
-    protected $pattern;
+    private $pattern;
 
     /**
      * CliPipeline constructor.

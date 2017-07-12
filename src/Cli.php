@@ -19,10 +19,20 @@ class Cli
      * @var string
      */
     private $prefix;
+    /**
+     * @var array|callable|CliPipeline|null|string
+     */
+    private $cliStages;
 
-    public function __construct(string $prefix = '')
+    /**
+     * Cli constructor.
+     * @param string $prefix
+     * @param callable|string|CliPipeline|array $cliStages
+     */
+    public function __construct(string $prefix = '', $cliStages = null)
     {
         $this->prefix = $prefix;
+        $this->cliStages = $cliStages;
         $this->cliPipelinesCollection = new CliPipelineArrayCollection();
     }
 
@@ -30,13 +40,15 @@ class Cli
      * Add a command to be handled by the application
      *
      * @param string $pattern
-     * @param array $stages
+     * @param callable|string|CliPipeline|array $stages
      *
      * @return void
      */
-    public function command(string $pattern, array $stages): void
+    public function command(string $pattern, $stages): void
     {
-        $this->cliPipelinesCollection->add(new CliPipeline($this->prefix . $pattern, $stages));
+        $pipeline = new CliPipeline($this->prefix . $pattern, $this->cliStages);
+        $pipeline->pipe($stages);
+        $this->cliPipelinesCollection->add($pipeline);
     }
 
     /**

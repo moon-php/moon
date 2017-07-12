@@ -10,7 +10,7 @@ use Psr\Container\ContainerInterface;
 class CliProcessor implements ProcessorInterface
 {
     /**
-     * @var ContainerInterface
+     * @var ContainerInterface $container
      */
     private $container;
 

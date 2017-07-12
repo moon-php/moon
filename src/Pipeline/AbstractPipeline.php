@@ -9,7 +9,7 @@ abstract class AbstractPipeline
     /**
      * @var array $stages
      */
-    protected $stages = [];
+    private $stages = [];
 
     /**
      * Add a stage to the Pipeline

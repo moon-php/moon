@@ -12,7 +12,7 @@ class HttpPipelineArrayCollection implements HttpPipelineCollectionInterface
     /**
      * @var array $pipelines
      */
-    protected $pipelines;
+    private $pipelines;
 
     /**
      * HttpPipelineArrayCollection constructor.

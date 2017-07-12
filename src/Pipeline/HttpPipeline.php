@@ -10,36 +10,44 @@ use Moon\Core\Matchable\MatchableInterface;
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
     /**
+     * @var array VALID_VERBS
+     */
+    private const VALID_VERBS = ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'];
+
+    /**
      * @var string $pattern
      */
-    protected $pattern;
+    private $pattern;
 
     /**
-     * @var string $verb
+     * @var array $verbs
      */
-    protected $verb;
-
-    /**
-     * @var array
-     */
-    protected const VALID_VERBS = ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'];
+    private $verbs;
 
     /**
      * HttpPipeline constructor.
      *
-     * @param string $verb
+     * @param array|string $verbs
      * @param string $pattern
      * @param callable|string|PipelineInterface|array $stages
      *
      * @throws \Moon\Core\Exception\InvalidArgumentException
      */
-    public function __construct(string $verb, string $pattern, $stages = null)
+    public function __construct($verbs, string $pattern, $stages = null)
     {
-        $verb = strtoupper($verb);
-        if (!in_array($verb, self::VALID_VERBS, true)) {
-            throw new InvalidArgumentException("The verb: $verb is not a valid http verb");
+        if (!is_array($verbs)) {
+            $verbs = [$verbs];
         }
-        $this->verb = $verb;
+
+        /** @var array $verbs */
+        foreach ($verbs as $k => $verb) {
+            $verbs[$k] = strtoupper($verb);
+            if (!in_array($verbs[$k], self::VALID_VERBS, true)) {
+                throw new InvalidArgumentException("The verb: {$verbs[$k]} is not a valid http verb");
+            }
+        }
+
+        $this->verbs = $verbs;
         $this->pattern = $pattern;
         if ($stages !== null) {
             $this->pipe($stages);
@@ -51,7 +59,7 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
      */
     public function matchBy(MatchableInterface $matchable): bool
     {
-        if ($matchable->match(['verb' => $this->verb, 'pattern' => $this->pattern])) {
+        if ($matchable->match(['verbs' => $this->verbs, 'pattern' => $this->pattern])) {
 
             return true;
         }

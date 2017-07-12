@@ -12,7 +12,7 @@ class CliPipelineArrayCollection implements CliPipelineCollectionInterface
     /**
      * @var array $pipelines
      */
-    protected $pipelines;
+    private $pipelines;
 
     /**
      * CliPipelineArrayCollection constructor.

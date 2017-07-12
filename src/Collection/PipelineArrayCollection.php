@@ -12,7 +12,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     /**
      * @var array $pipelines
      */
-    protected $pipelines;
+    private $pipelines;
 
     /**
      * PipelineArrayCollection constructor.

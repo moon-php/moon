@@ -33,13 +33,32 @@ class Input implements InputInterface
      * $arguments = ['argument1', 'argumentN']
      * $options = ['optionWithNoValue' => null, 'optionWithValue' => 1, 'a' => null, 'b' => 1]
      *
-     * TODO: Add logic for split the executed command into commandName, arguments, options
-     *
-     * @param string $command
+     * @param array $commandSegments
      */
-    public function __construct(string $command)
+    public function __construct(array $commandSegments)
     {
+        // Remove the filename
+        array_shift($commandSegments);
 
+        // Add the command name
+        $this->commandName = array_shift($commandSegments);
+
+        // Parse all segments
+        foreach ($commandSegments as $commandSegment) {
+            if (strpos($commandSegment, '--') === 0) {
+                $option = explode('=', substr($commandSegment, 2));
+                $this->options[$option[0]] = $option[1] ?? null;
+                continue;
+            }
+            if (strpos($commandSegment, '-') === 0) {
+                $option = explode('=', substr($commandSegment, 1));
+                $this->options[$option[0]] = $option[1] ?? null;
+                continue;
+            }
+
+            $this->arguments[] = $commandSegment;
+            continue;
+        }
     }
 
     /**

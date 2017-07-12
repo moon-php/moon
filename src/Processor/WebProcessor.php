@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 class WebProcessor implements ProcessorInterface
 {
     /**
-     * @var ContainerInterface
+     * @var ContainerInterface $container
      */
     private $container;
 
