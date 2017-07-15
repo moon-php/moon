@@ -36,7 +36,7 @@ class CliProcessor implements ProcessorInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Moon\Core\Exception\Exception
      */
-    public function processStages(array $stages, $payload = null): void
+    public function processStages(array $stages, $payload): void
     {
         // Take the stage to handle and the next one (if exists)
         $currentStage = array_shift($stages);

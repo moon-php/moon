@@ -39,7 +39,7 @@ class WebProcessor implements ProcessorInterface
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Moon\Core\Exception\Exception
      */
-    public function processStages(array $stages, $payload = null)
+    public function processStages(array $stages, $payload)
     {
         // Take the stage to handle and the next one (if exists)
         $currentStage = array_shift($stages);
