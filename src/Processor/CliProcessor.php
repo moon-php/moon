@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Moon\Core\Processor;
 
-use Moon\Core\Exception\Exception;
+use Moon\Core\Command\CommandInterface;
+use Moon\Core\Exception\UnprocessableStageException;
 use Psr\Container\ContainerInterface;
 
 class CliProcessor implements ProcessorInterface
@@ -25,16 +26,9 @@ class CliProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle all the passed stages
-     *
-     * @param array $stages
-     * @param mixed $payload
+     * {@inheritdoc}
      *
      * @return void
-     *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Moon\Core\Exception\Exception
      */
     public function processStages(array $stages, $payload): void
     {
@@ -46,8 +40,12 @@ class CliProcessor implements ProcessorInterface
             $currentStage = $this->container->get($currentStage);
         }
 
+        if ($currentStage instanceof CommandInterface) {
+            $currentStage->configure();
+        }
+
         if (!is_callable($currentStage)) {
-            throw new Exception("The stage '$currentStage' can't be handled");
+            throw new UnprocessableStageException($currentStage, 'The stage can\'t be handled');
         }
 
         $payload = $currentStage($payload);

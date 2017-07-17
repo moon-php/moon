@@ -236,11 +236,11 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function runCli(PipelineCollectionInterface $pipelines): void
     {
-        $input = $this->container->has('moon.input') ? $this->container->get('moon.input') : new Input($GLOBALS['argv']);
+        $input = $this->container->has('moon.cliInput') ? $this->container->get('moon.cliInput') : new Input($GLOBALS['argv']);
         $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : new CliProcessor($this->container);
 
         if (!$input instanceof InputInterface) {
-            throw new InvalidArgumentException('input must be a valid ' . InputInterface::class . ' instance');
+            throw new InvalidArgumentException('Input must be a valid ' . InputInterface::class . ' instance');
         }
         if (!$processor instanceof ProcessorInterface) {
             throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');

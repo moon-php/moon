@@ -6,7 +6,7 @@ namespace Moon\Core\Processor;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Moon\Core\Exception\Exception;
+use Moon\Core\Exception\UnprocessableStageException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -28,16 +28,9 @@ class WebProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle all the passed stages
-     *
-     * @param array $stages
-     * @param mixed $payload
+     * {@inheritdoc}
      *
      * @return ResponseInterface|string
-     *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Moon\Core\Exception\Exception
      */
     public function processStages(array $stages, $payload)
     {
@@ -79,6 +72,6 @@ class WebProcessor implements ProcessorInterface
             return $currentStage($payload);
         }
 
-        throw new Exception("The stage '$currentStage' can't be handled");
+        throw new UnprocessableStageException($currentStage, 'The stage can\'t be handled');
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Moon\Core;
 
+use Fig\Http\Message\RequestMethodInterface;
+use Fig\Http\Message\StatusCodeInterface;
 use Moon\Core\Collection\PipelineArrayCollection;
 use Moon\Core\Collection\PipelineCollectionInterface;
 use Moon\Core\Pipeline\HttpPipeline;
@@ -48,7 +50,7 @@ class Router
      */
     public function get(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('GET', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_GET, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
 
@@ -64,7 +66,7 @@ class Router
      */
     public function post(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('POST', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_POST, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
@@ -79,7 +81,7 @@ class Router
      */
     public function put(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('PUT', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_PUT, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
@@ -94,7 +96,7 @@ class Router
      */
     public function patch(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('PATCH', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_PATCH, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
@@ -109,7 +111,7 @@ class Router
      */
     public function delete(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('DELETE', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_DELETE, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
@@ -124,7 +126,7 @@ class Router
      */
     public function options(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('OPTIONS', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_OPTIONS, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
@@ -139,7 +141,52 @@ class Router
      */
     public function head(string $pattern, $stages): void
     {
-        $pipeline = new HttpPipeline('HEAD', $this->prefix . $pattern, $this->routerStages);
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_HEAD, $this->prefix . $pattern, $this->routerStages);
+        $pipeline->pipe($stages);
+        $this->pipelineCollection->add($pipeline);
+    }
+
+    /**
+     * Add a 'PURGE' route to be handled by the application
+     *
+     * @param string $pattern
+     * @param callable|string|HttpPipeline|array $stages $stages
+     *
+     * @return void
+     */
+    public function purge(string $pattern, $stages): void
+    {
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_PURGE, $this->prefix . $pattern, $this->routerStages);
+        $pipeline->pipe($stages);
+        $this->pipelineCollection->add($pipeline);
+    }
+
+    /**
+     * Add a 'TRACE' route to be handled by the application
+     *
+     * @param string $pattern
+     * @param callable|string|HttpPipeline|array $stages $stages
+     *
+     * @return void
+     */
+    public function trace(string $pattern, $stages): void
+    {
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_TRACE, $this->prefix . $pattern, $this->routerStages);
+        $pipeline->pipe($stages);
+        $this->pipelineCollection->add($pipeline);
+    }
+
+    /**
+     * Add a 'CONNECT' route to be handled by the application
+     *
+     * @param string $pattern
+     * @param callable|string|HttpPipeline|array $stages $stages
+     *
+     * @return void
+     */
+    public function connect(string $pattern, $stages): void
+    {
+        $pipeline = new HttpPipeline(RequestMethodInterface::METHOD_CONNECT, $this->prefix . $pattern, $this->routerStages);
         $pipeline->pipe($stages);
         $this->pipelineCollection->add($pipeline);
     }
