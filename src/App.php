@@ -49,11 +49,12 @@ class App extends AbstractPipeline implements PipelineInterface
     }
 
     /**
-     * Run the web application, and print a InvalidRequest
+     * Run the web application, and print a Response
      *
      * @param PipelineCollectionInterface $pipelines
      *
      * @return void
+     *
      * @throws ContainerExceptionInterface
      * @throws MoonInvalidArgumentException
      * @throws NotFoundExceptionInterface
@@ -61,36 +62,13 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function run(PipelineCollectionInterface $pipelines): void
     {
-        $request = $this->container->get('moon.request');
-        $response = $this->container->get('moon.response');
-        $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : new WebProcessor($this->container);
-        $exceptionHandler = $this->container->has('moon.exceptionHandler') ? $this->container->get('moon.exceptionHandler') : new ExceptionHandler();
-        $throwableHandler = $this->container->has('moon.throwableHandler') ? $this->container->get('moon.throwableHandler') : new ThrowableHandler();
-        $notFoundHandler = $this->container->has('moon.notFoundHandler') ? $this->container->get('moon.notFoundHandler') : new NotFoundHandler();
-        $methodNotAllowed = $this->container->has('moon.methodNotAllowedHandler') ? $this->container->get('moon.methodNotAllowedHandler') : new MethodNotAllowedHandler();
-
-        if (!$request instanceof ServerRequestInterface) {
-            throw new MoonInvalidArgumentException('Request must be a valid ' . ServerRequestInterface::class . ' instance');
-        }
-        if (!$response instanceof ResponseInterface) {
-            throw new MoonInvalidArgumentException('InvalidRequest must be a valid ' . ResponseInterface::class . ' instance');
-        }
-        if (!$processor instanceof ProcessorInterface) {
-            throw new MoonInvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
-        }
-        if (!$exceptionHandler instanceof ErrorHandlerInterface) {
-            throw new MoonInvalidArgumentException('ExceptionHandler must be a valid ' . ErrorHandlerInterface::class . ' instance');
-        }
-        if (!$throwableHandler instanceof ErrorHandlerInterface) {
-            throw new MoonInvalidArgumentException('ThrowableHandler must be a valid ' . ErrorHandlerInterface::class . ' instance');
-        }
-        if (!$notFoundHandler instanceof InvalidRequestInterface) {
-            throw new MoonInvalidArgumentException('NotFoundHandler must be a valid ' . InvalidRequestInterface::class . ' instance');
-        }
-        if (!$methodNotAllowed instanceof InvalidRequestInterface) {
-            throw new MoonInvalidArgumentException('MethodNotAllowed must be a valid ' . InvalidRequestInterface::class . ' instance');
-        }
-
+        $request = $this->getContainerEntryOrFail('moon.request', ServerRequestInterface::class);
+        $response = $this->getContainerEntryOrFail('moon.response', ResponseInterface::class);
+        $processor = $this->getContainerEntryOrFail('moon.webProcessor', ProcessorInterface::class, new WebProcessor($this->container));
+        $exceptionHandler = $this->getContainerEntryOrFail('moon.exceptionHandler', ErrorHandlerInterface::class, new ExceptionHandler());
+        $throwableHandler = $this->getContainerEntryOrFail('moon.throwableHandler', ErrorHandlerInterface::class, new ThrowableHandler());
+        $notFoundHandler = $this->getContainerEntryOrFail('moon.notFoundHandler', InvalidRequestInterface::class, new NotFoundHandler());
+        $methodNotAllowed = $this->getContainerEntryOrFail('moon.methodNotAllowedHandler', InvalidRequestInterface::class, new MethodNotAllowedHandler());
         $matchableRequest = new RequestMatchable($request);
 
         try {
@@ -210,5 +188,29 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         echo $body->__toString();
+    }
+
+    /**
+     * Return an instance by the container or a default type
+     *
+     * @param string $entry
+     * @param string $class
+     * @param null $default
+     *
+     * @return mixed|null
+     *
+     * @throws ContainerExceptionInterface
+     * @throws MoonInvalidArgumentException
+     * @throws NotFoundExceptionInterface
+     */
+    private function getContainerEntryOrFail(string $entry, string $class, $default = null)
+    {
+        $object = $this->container->has($entry) ? $this->container->get($entry) : $default;
+
+        if (!$object instanceof $class) {
+            throw new MoonInvalidArgumentException("$entry must be a valid $class instance");
+        }
+
+        return $object;
     }
 }

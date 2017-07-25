@@ -12,24 +12,18 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     /**
      * @var array $pipelines
      */
-    private $pipelines;
+    private $pipelines = [];
 
     /**
      * PipelineArrayCollection constructor.
      *
      * @param array $pipelines
      *
-     * @throws \Moon\Moon\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(array $pipelines = [])
     {
-        foreach ($pipelines as $key => $pipeline) {
-            if (!$pipeline instanceof PipelineInterface) {
-                throw new InvalidArgumentException('All pipelines must implement ' . PipelineInterface::class);
-            }
-        }
-
-        $this->pipelines = $pipelines;
+        $this->addArray($pipelines);
     }
 
     /**
