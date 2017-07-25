@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Handler\InvalidRequest;
+namespace Moon\Moon\Handler\InvalidRequest;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

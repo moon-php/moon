@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Handler\Error;
+namespace Moon\Moon\Handler\Error;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;

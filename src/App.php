@@ -6,12 +6,12 @@ namespace Moon\Moon;
 
 use Exception;
 use InvalidArgumentException;
-use Moon\Core\Handler\Error\ErrorHandlerInterface;
-use Moon\Core\Handler\Error\ExceptionHandler;
-use Moon\Core\Handler\Error\ThrowableHandler;
-use Moon\Core\Handler\InvalidRequest\InvalidRequestInterface;
-use Moon\Core\Handler\InvalidRequest\MethodNotAllowedHandler;
-use Moon\Core\Handler\InvalidRequest\NotFoundHandler;
+use Moon\Moon\Handler\Error\ErrorHandlerInterface;
+use Moon\Moon\Handler\Error\ExceptionHandler;
+use Moon\Moon\Handler\Error\ThrowableHandler;
+use Moon\Moon\Handler\InvalidRequest\InvalidRequestInterface;
+use Moon\Moon\Handler\InvalidRequest\MethodNotAllowedHandler;
+use Moon\Moon\Handler\InvalidRequest\NotFoundHandler;
 use Moon\Moon\Collection\PipelineCollectionInterface;
 use Moon\Moon\Exception\InvalidArgumentException as MoonInvalidArgumentException;
 use Moon\Moon\Exception\UnprocessableStageException;
