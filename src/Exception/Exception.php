@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Exception;
+namespace Moon\Moon\Exception;
 
 class Exception extends \Exception
 {

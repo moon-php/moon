@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Collection;
+namespace Moon\Moon\Collection;
 
-use Moon\Core\Pipeline\PipelineInterface;
+use Moon\Moon\Pipeline\PipelineInterface;
 
 interface PipelineCollectionInterface extends \IteratorAggregate
 {

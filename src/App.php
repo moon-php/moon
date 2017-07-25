@@ -2,25 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core;
+namespace Moon\Moon;
 
-use Moon\Core\Collection\PipelineCollectionInterface;
-use Moon\Core\Exception\InvalidArgumentException;
-use Moon\Core\Input\Input;
-use Moon\Core\Input\InputInterface;
-use Moon\Core\Matchable\InputMatchable;
-use Moon\Core\Matchable\RequestMatchable;
-use Moon\Core\Pipeline\AbstractPipeline;
-use Moon\Core\Pipeline\HttpPipeline;
-use Moon\Core\Pipeline\MatchablePipelineInterface;
-use Moon\Core\Pipeline\PipelineInterface;
-use Moon\Core\Processor\CliProcessor;
-use Moon\Core\Processor\ProcessorInterface;
-use Moon\Core\Processor\WebProcessor;
+use Exception;
+use InvalidArgumentException;
+use Moon\Core\Handler\Error\ErrorHandlerInterface;
+use Moon\Core\Handler\Error\ExceptionHandler;
+use Moon\Core\Handler\Error\ThrowableHandler;
+use Moon\Core\Handler\InvalidRequest\InvalidRequestInterface;
+use Moon\Core\Handler\InvalidRequest\MethodNotAllowedHandler;
+use Moon\Core\Handler\InvalidRequest\NotFoundHandler;
+use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Exception\InvalidArgumentException as MoonInvalidArgumentException;
+use Moon\Moon\Exception\UnprocessableStageException;
+use Moon\Moon\Matchable\MatchableInterface;
+use Moon\Moon\Matchable\RequestMatchable;
+use Moon\Moon\Pipeline\AbstractPipeline;
+use Moon\Moon\Pipeline\HttpPipeline;
+use Moon\Moon\Pipeline\PipelineInterface;
+use Moon\Moon\Processor\ProcessorInterface;
+use Moon\Moon\Processor\WebProcessor;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
+use Throwable;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
@@ -39,82 +48,122 @@ class App extends AbstractPipeline implements PipelineInterface
         $this->container = $container;
     }
 
-    ####################################################################################################################
-    ####################################################################################################################
-    # WEB
-    ####################################################################################################################
-    ####################################################################################################################
-
     /**
-     * Run the web application, and return a Response
+     * Run the web application, and print a InvalidRequest
      *
      * @param PipelineCollectionInterface $pipelines
      *
      * @return void
-     *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws InvalidArgumentException
+     * @throws ContainerExceptionInterface
+     * @throws MoonInvalidArgumentException
+     * @throws NotFoundExceptionInterface
+     * @throws RuntimeException
      */
-    public function runWeb(PipelineCollectionInterface $pipelines): void
+    public function run(PipelineCollectionInterface $pipelines): void
     {
         $request = $this->container->get('moon.request');
         $response = $this->container->get('moon.response');
         $processor = $this->container->has('moon.webProcessor') ? $this->container->get('moon.webProcessor') : new WebProcessor($this->container);
+        $exceptionHandler = $this->container->has('moon.exceptionHandler') ? $this->container->get('moon.exceptionHandler') : new ExceptionHandler();
+        $throwableHandler = $this->container->has('moon.throwableHandler') ? $this->container->get('moon.throwableHandler') : new ThrowableHandler();
+        $notFoundHandler = $this->container->has('moon.notFoundHandler') ? $this->container->get('moon.notFoundHandler') : new NotFoundHandler();
+        $methodNotAllowed = $this->container->has('moon.methodNotAllowedHandler') ? $this->container->get('moon.methodNotAllowedHandler') : new MethodNotAllowedHandler();
 
         if (!$request instanceof ServerRequestInterface) {
-            throw new InvalidArgumentException('Request must be a valid ' . ServerRequestInterface::class . ' instance');
+            throw new MoonInvalidArgumentException('Request must be a valid ' . ServerRequestInterface::class . ' instance');
         }
         if (!$response instanceof ResponseInterface) {
-            throw new InvalidArgumentException('Response must be a valid ' . ResponseInterface::class . ' instance');
+            throw new MoonInvalidArgumentException('InvalidRequest must be a valid ' . ResponseInterface::class . ' instance');
         }
         if (!$processor instanceof ProcessorInterface) {
-            throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
+            throw new MoonInvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
+        }
+        if (!$exceptionHandler instanceof ErrorHandlerInterface) {
+            throw new MoonInvalidArgumentException('ExceptionHandler must be a valid ' . ErrorHandlerInterface::class . ' instance');
+        }
+        if (!$throwableHandler instanceof ErrorHandlerInterface) {
+            throw new MoonInvalidArgumentException('ThrowableHandler must be a valid ' . ErrorHandlerInterface::class . ' instance');
+        }
+        if (!$notFoundHandler instanceof InvalidRequestInterface) {
+            throw new MoonInvalidArgumentException('NotFoundHandler must be a valid ' . InvalidRequestInterface::class . ' instance');
+        }
+        if (!$methodNotAllowed instanceof InvalidRequestInterface) {
+            throw new MoonInvalidArgumentException('MethodNotAllowed must be a valid ' . InvalidRequestInterface::class . ' instance');
         }
 
         $matchableRequest = new RequestMatchable($request);
 
+        try {
+            // If a pipeline match print the response and return
+            if ($response = $this->handlePipeline($pipelines, $matchableRequest, $processor, $response)) {
+                $this->sendResponse($response);
+
+                return;
+            }
+
+            // If a route pattern matched but the http verbs was different, print a '405 response' and return
+            if ($matchableRequest->isPatternMatched()) {
+                $this->sendResponse($methodNotAllowed($request, $response));
+
+                return;
+            }
+
+            // If no route pattern matched, print a '404 response' and return
+            $this->sendResponse($notFoundHandler($request, $response));
+
+            return;
+        } catch (Exception $e) {
+            $this->sendResponse($exceptionHandler($e, $request, $response));
+        } catch (Throwable $e) {
+            $this->sendResponse($throwableHandler($e, $request, $response));
+        }
+    }
+
+    /**
+     * Process the pipelines and return a ResponseInterface if one of this match
+     *
+     * @param PipelineCollectionInterface $pipelines
+     * @param MatchableInterface $matchableRequest
+     * @param ProcessorInterface $processor
+     * @param ResponseInterface $response
+     *
+     * @return ResponseInterface|void
+     *
+     * @throws UnprocessableStageException
+     * @throws ContainerExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws MoonInvalidArgumentException
+     * @throws NotFoundExceptionInterface
+     * @throws RuntimeException
+     */
+    private function handlePipeline(
+        PipelineCollectionInterface $pipelines,
+        MatchableInterface $matchableRequest,
+        ProcessorInterface $processor,
+        ResponseInterface $response
+    ):?ResponseInterface
+    {
         /** @var HttpPipeline $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableRequest)) {
 
-                $pipelineResponse = $processor->processStages(
-                    array_merge($this->stages(), $pipeline->stages()),
-                    $matchableRequest->requestWithAddedAttributes()
-                );
+                $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $matchableRequest->requestWithAddedAttributes());
 
                 if ($pipelineResponse instanceof ResponseInterface) {
-                    $this->sendResponse($pipelineResponse);
 
-                    return;
+                    return $pipelineResponse;
                 }
 
                 $stream = $this->container->get('moon.stream');
                 if (!$stream instanceof StreamInterface) {
-                    throw new InvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
+                    throw new MoonInvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
                 }
 
                 $stream->write($pipelineResponse);
-                $this->sendResponse($response->withBody($stream));
 
-                return;
+                return $response->withBody($stream);
             }
         }
-
-        if ($methodNotAllowedResponse = $this->handleMethodNotAllowedResponse($response, $matchableRequest)) {
-            $this->sendResponse($methodNotAllowedResponse);
-
-            return;
-        }
-
-        if ($routeNotFoundResponse = $this->handleNotFoundResponse($response)) {
-            $this->sendResponse($routeNotFoundResponse);
-
-            return;
-        }
-
-        /** @var ResponseInterface $response */
-        $this->sendResponse($response->withStatus(500));
     }
 
     /**
@@ -123,6 +172,10 @@ class App extends AbstractPipeline implements PipelineInterface
      * @param ResponseInterface $response
      *
      * @return void
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws RuntimeException
      */
     protected function sendResponse(ResponseInterface $response): void
     {
@@ -157,101 +210,5 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         echo $body->__toString();
-    }
-
-    /**
-     * Return a Response for "not found" status
-     *
-     * @param ResponseInterface $response
-     *
-     * @return null|ResponseInterface
-     *
-     * @throws \Psr\Container\ContainerExceptionInterface
-     */
-    private function handleNotFoundResponse(ResponseInterface $response):?ResponseInterface
-    {
-        if (!$this->container->has('moon.notFoundHandler')) {
-
-            return $response->withStatus(404);
-        }
-
-        $notFoundHandler = $this->container->get('moon.notFoundHandler');
-
-        if ($notFoundHandler instanceof \Closure) {
-
-            return $notFoundHandler();
-        }
-
-        return null;
-    }
-
-    /**
-     * Return a Response for "method not allowed" status
-     *
-     * @param ResponseInterface $response
-     * @param RequestMatchable $requestMatchable
-     *
-     * @return null|ResponseInterface
-     *
-     * @throws \Psr\Container\ContainerExceptionInterface
-     */
-    private function handleMethodNotAllowedResponse(ResponseInterface $response, RequestMatchable $requestMatchable):?ResponseInterface
-    {
-        if (!$requestMatchable->isPatternMatched()) {
-
-            return null;
-        }
-
-        if (!$this->container->has('moon.methodNotAllowedHandler')) {
-
-            return $response->withStatus(405);
-        }
-
-        $notFoundHandler = $this->container->get('moon.methodNotAllowedHandler');
-
-        if ($notFoundHandler instanceof \Closure) {
-
-            return $notFoundHandler();
-        }
-
-        return null;
-    }
-
-    ####################################################################################################################
-    ####################################################################################################################
-    # CLI
-    ####################################################################################################################
-    ####################################################################################################################
-
-    /**
-     * Run the cli application
-     *
-     * @param PipelineCollectionInterface $pipelines
-     *
-     * @return void
-     *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Moon\Core\Exception\InvalidArgumentException
-     */
-    public function runCli(PipelineCollectionInterface $pipelines): void
-    {
-        $input = $this->container->has('moon.input') ? $this->container->get('moon.input') : new Input($GLOBALS['argv']);
-        $processor = $this->container->has('moon.cliProcessor') ? $this->container->get('moon.cliProcessor') : new CliProcessor($this->container);
-
-        if (!$input instanceof InputInterface) {
-            throw new InvalidArgumentException('input must be a valid ' . InputInterface::class . ' instance');
-        }
-        if (!$processor instanceof ProcessorInterface) {
-            throw new InvalidArgumentException('Processor must be a valid ' . ProcessorInterface::class . ' instance');
-        }
-        $matchableString = new InputMatchable($input);
-
-        /** @var MatchablePipelineInterface $pipeline */
-        foreach ($pipelines as $pipeline) {
-            if ($pipeline->matchBy($matchableString)) {
-                $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $input);
-            }
-        }
     }
 }

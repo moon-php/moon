@@ -2,17 +2,29 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Pipeline;
+namespace Moon\Moon\Pipeline;
 
-use Moon\Core\Exception\InvalidArgumentException;
-use Moon\Core\Matchable\MatchableInterface;
+use Fig\Http\Message\RequestMethodInterface;
+use Moon\Moon\Exception\InvalidArgumentException;
+use Moon\Moon\Matchable\MatchableInterface;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
     /**
      * @var array VALID_VERBS
      */
-    private const VALID_VERBS = ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'];
+    private const VALID_VERBS = [
+        RequestMethodInterface::METHOD_HEAD,
+        RequestMethodInterface::METHOD_GET,
+        RequestMethodInterface::METHOD_POST,
+        RequestMethodInterface::METHOD_PUT,
+        RequestMethodInterface::METHOD_PATCH,
+        RequestMethodInterface::METHOD_DELETE,
+        RequestMethodInterface::METHOD_PURGE,
+        RequestMethodInterface::METHOD_OPTIONS,
+        RequestMethodInterface::METHOD_TRACE,
+        RequestMethodInterface::METHOD_CONNECT,
+    ];
 
     /**
      * @var string $pattern
@@ -31,7 +43,7 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
      * @param string $pattern
      * @param callable|string|PipelineInterface|array $stages
      *
-     * @throws \Moon\Core\Exception\InvalidArgumentException
+     * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function __construct($verbs, string $pattern, $stages = null)
     {

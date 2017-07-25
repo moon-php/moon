@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Processor;
+namespace Moon\Moon\Processor;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Moon\Core\Exception\Exception;
+use Moon\Moon\Exception\UnprocessableStageException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -28,16 +28,9 @@ class WebProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle all the passed stages
-     *
-     * @param array $stages
-     * @param mixed $payload
+     * {@inheritdoc}
      *
      * @return ResponseInterface|string
-     *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Moon\Core\Exception\Exception
      */
     public function processStages(array $stages, $payload)
     {
@@ -50,13 +43,13 @@ class WebProcessor implements ProcessorInterface
             $currentStage = $this->container->get($currentStage);
         }
 
-        // If the current stage is a Delegate use it and return the Response
+        // If the current stage is a Delegate use it and return the InvalidRequest
         if ($currentStage instanceof DelegateInterface) {
 
             return $currentStage->process($payload);
         }
 
-        // If the current stage is a Middleware and the next one is a Delegate, use it and return the Response
+        // If the current stage is a Middleware and the next one is a Delegate, use it and return the InvalidRequest
         if ($currentStage instanceof MiddlewareInterface && in_array(DelegateInterface::class, class_implements($nextStage), true)) {
 
             // Use the next stage as Delegate
@@ -79,6 +72,6 @@ class WebProcessor implements ProcessorInterface
             return $currentStage($payload);
         }
 
-        throw new Exception("The stage '$currentStage' can't be handled");
+        throw new UnprocessableStageException($currentStage, 'The stage can\'t be handled');
     }
 }
