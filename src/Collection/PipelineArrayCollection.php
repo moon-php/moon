@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Collection;
+namespace Moon\Moon\Collection;
 
-use Moon\Core\Exception\InvalidArgumentException;
-use Moon\Core\Pipeline\PipelineInterface;
+use Moon\Moon\Exception\InvalidArgumentException;
+use Moon\Moon\Pipeline\PipelineInterface;
 
 class PipelineArrayCollection implements PipelineCollectionInterface
 {
@@ -19,7 +19,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
      *
      * @param array $pipelines
      *
-     * @throws \Moon\Core\Exception\InvalidArgumentException
+     * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function __construct(array $pipelines = [])
     {
@@ -43,7 +43,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     /**
      * {@inheritdoc}
      *
-     * @throws \Moon\Core\Exception\InvalidArgumentException
+     * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function addArray(array $pipelines): void
     {

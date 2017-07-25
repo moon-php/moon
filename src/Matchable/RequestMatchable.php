@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Matchable;
+namespace Moon\Moon\Matchable;
 
 use Psr\Http\Message\ServerRequestInterface;
 

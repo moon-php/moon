@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Processor;
+namespace Moon\Moon\Processor;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Moon\Core\Exception\UnprocessableStageException;
+use Moon\Moon\Exception\UnprocessableStageException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 

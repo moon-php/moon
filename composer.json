@@ -1,6 +1,6 @@
 {
   "name": "moon-php/moon",
-  "description": "Moon PHP microframework based on interchangeable PSR-only components",
+  "description": "Moon PHP web microframework based on interchangeable PSR-only components",
   "license": "MIT",
   "homepage": "https://www.moon-php.com/",
   "require": {
@@ -21,7 +21,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Moon\\Core\\": "src/"
+      "Moon\\Moon\\": "src/"
     }
   }
 }

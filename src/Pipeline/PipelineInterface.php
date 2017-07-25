@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Pipeline;
+namespace Moon\Moon\Pipeline;
 
 interface PipelineInterface
 {

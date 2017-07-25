@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Matchable;
+namespace Moon\Moon\Matchable;
+
+use Psr\Http\Message\ServerRequestInterface;
 
 interface MatchableInterface
 {
@@ -14,4 +16,11 @@ interface MatchableInterface
      * @return bool
      */
     public function match(array $criteria): bool;
+
+    /**
+     * Return the new ServerRequest with the added attributes
+     *
+     * @return ServerRequestInterface
+     */
+    public function requestWithAddedAttributes(): ServerRequestInterface;
 }

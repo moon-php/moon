@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Pipeline;
+namespace Moon\Moon\Pipeline;
 
 use Fig\Http\Message\RequestMethodInterface;
-use Moon\Core\Exception\InvalidArgumentException;
-use Moon\Core\Matchable\MatchableInterface;
+use Moon\Moon\Exception\InvalidArgumentException;
+use Moon\Moon\Matchable\MatchableInterface;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
@@ -43,7 +43,7 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
      * @param string $pattern
      * @param callable|string|PipelineInterface|array $stages
      *
-     * @throws \Moon\Core\Exception\InvalidArgumentException
+     * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function __construct($verbs, string $pattern, $stages = null)
     {

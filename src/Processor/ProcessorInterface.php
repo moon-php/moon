@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Processor;
+namespace Moon\Moon\Processor;
+
+use Moon\Moon\Exception\UnprocessableStageException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 interface ProcessorInterface
 {
@@ -14,9 +18,9 @@ interface ProcessorInterface
      *
      * @return mixed
      *
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Moon\Core\Exception\UnprocessableStageException
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws UnprocessableStageException
      */
     public function processStages(array $stages, $payload);
 }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core\Pipeline;
+namespace Moon\Moon\Pipeline;
 
-use Moon\Core\Matchable\MatchableInterface;
+use Moon\Moon\Matchable\MatchableInterface;
 
 interface MatchablePipelineInterface extends PipelineInterface
 {

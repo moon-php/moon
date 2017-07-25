@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Moon\Core;
+namespace Moon\Moon;
 
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
-use Moon\Core\Collection\PipelineArrayCollection;
-use Moon\Core\Collection\PipelineCollectionInterface;
-use Moon\Core\Pipeline\HttpPipeline;
+use Moon\Moon\Collection\PipelineArrayCollection;
+use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Pipeline\HttpPipeline;
 
 class Router
 {
@@ -200,7 +200,7 @@ class Router
      *
      * @return void
      *
-     * @throws \Moon\Core\Exception\InvalidArgumentException
+     * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function map(string $pattern, array $verbs, $stages): void
     {
