@@ -43,13 +43,13 @@ class WebProcessor implements ProcessorInterface
             $currentStage = $this->container->get($currentStage);
         }
 
-        // If the current stage is a Delegate use it and return the Response
+        // If the current stage is a Delegate use it and return the InvalidRequest
         if ($currentStage instanceof DelegateInterface) {
 
             return $currentStage->process($payload);
         }
 
-        // If the current stage is a Middleware and the next one is a Delegate, use it and return the Response
+        // If the current stage is a Middleware and the next one is a Delegate, use it and return the InvalidRequest
         if ($currentStage instanceof MiddlewareInterface && in_array(DelegateInterface::class, class_implements($nextStage), true)) {
 
             // Use the next stage as Delegate
