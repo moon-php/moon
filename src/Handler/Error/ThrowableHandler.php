@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
-class ThrowableHandler implements ErrorHandlerInterface
+class ThrowableHandler implements ThrowableHandlerInterface
 {
     /**
      * {@inheritdoc}

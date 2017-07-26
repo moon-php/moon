@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Moon\Moon;
 
 use Fig\Http\Message\RequestMethodInterface;
-use Fig\Http\Message\StatusCodeInterface;
 use Moon\Moon\Collection\PipelineArrayCollection;
 use Moon\Moon\Collection\PipelineCollectionInterface;
 use Moon\Moon\Pipeline\HttpPipeline;

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Handler\Error;
 
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Throwable;
 
-interface ErrorHandlerInterface
+interface ExceptionHandlerInterface
 {
     /**
-     * Return a Response for an application error
+     * Return a Response for an application exception
      *
-     * @param Throwable $exception
+     * @param Exception $exception
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      *
      * @return ResponseInterface
      */
-    public function __invoke(Throwable $exception, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface;
+    public function __invoke(Exception $exception, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface;
 }

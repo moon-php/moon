@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Moon\Moon\Handler\InvalidRequest;
+
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+interface NotFoundHandlerInterface
+{
+    /**
+     * Return a response for invalid request
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     *
+     * @return ResponseInterface
+     */
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface;
+}

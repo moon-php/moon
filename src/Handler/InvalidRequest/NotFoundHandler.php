@@ -8,7 +8,7 @@ use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class NotFoundHandler implements InvalidRequestInterface
+class NotFoundHandler implements NotFoundHandlerInterface
 {
     /**
      * {@inheritdoc}
