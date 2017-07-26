@@ -65,20 +65,21 @@ class App extends AbstractPipeline implements PipelineInterface
     public function run(PipelineCollectionInterface $pipelines): void
     {
         /** @var ServerRequestInterface $request */
-        $request = $this->getContainerEntry(ServerRequestInterface::class);
+        $request = $this->getContainerEntry(ServerRequestInterface::class, true);
         /** @var ResponseInterface $response */
-        $response = $this->getContainerEntry(ResponseInterface::class);
+        $response = $this->getContainerEntry(ResponseInterface::class, true);
         /** @var ProcessorInterface $processor */
-        $processor = $this->getContainerEntry(ProcessorInterface::class, true) ?: new WebProcessor($this->container);
+        $processor = $this->getContainerEntry(ProcessorInterface::class) ?: new WebProcessor($this->container);
         /** @var ExceptionHandlerInterface $exceptionHandler */
-        $exceptionHandler = $this->getContainerEntry(ExceptionHandlerInterface::class, true) ?: new ExceptionHandler();
+        $exceptionHandler = $this->getContainerEntry(ExceptionHandlerInterface::class) ?: new ExceptionHandler();
         /** @var ThrowableHandlerInterface $throwableHandler */
-        $throwableHandler = $this->getContainerEntry(ThrowableHandlerInterface::class, true) ?: new ThrowableHandler();
+        $throwableHandler = $this->getContainerEntry(ThrowableHandlerInterface::class) ?: new ThrowableHandler();
         /** @var NotFoundHandlerInterface $notFoundHandler */
-        $notFoundHandler = $this->getContainerEntry(NotFoundHandlerInterface::class, true) ?: new NotFoundHandler();
+        $notFoundHandler = $this->getContainerEntry(NotFoundHandlerInterface::class) ?: new NotFoundHandler();
         /** @var MethodNotAllowedHandlerInterface $methodNotAllowed */
-        $methodNotAllowed = $this->getContainerEntry(MethodNotAllowedHandlerInterface::class, true) ?: new MethodNotAllowedHandler();
-        $matchableRequest = new RequestMatchable($request);
+        $methodNotAllowed = $this->getContainerEntry(MethodNotAllowedHandlerInterface::class) ?: new MethodNotAllowedHandler();
+        /** @var MatchableInterface $methodNotAllowed */
+        $matchableRequest = $this->getContainerEntry(MatchableInterface::class) ?: new RequestMatchable($request);
 
         try {
             // If a pipeline match print the response and return
@@ -187,10 +188,10 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         // Send the body (by chunk if specified in the container)
-        if ($this->container->has('moon.chunkSize')) {
-            $chunk = $this->container->get('moon.chunkSize');
+        if ($this->container->has('moon.streamReadLength')) {
+            $length = $this->container->get('moon.streamReadLength');
             while (!$body->eof()) {
-                echo $body->read($chunk);
+                echo $body->read($length);
             }
 
             return;
@@ -203,7 +204,7 @@ class App extends AbstractPipeline implements PipelineInterface
      * Return an instance by the container or false if has a default type
      *
      * @param string $className
-     * @param bool $hasDefault
+     * @param bool $required
      *
      * @return mixed
      *
@@ -211,11 +212,11 @@ class App extends AbstractPipeline implements PipelineInterface
      * @throws MoonInvalidArgumentException
      * @throws NotFoundExceptionInterface
      */
-    private function getContainerEntry(string $className, bool $hasDefault = false)
+    private function getContainerEntry(string $className, bool $required = false)
     {
         $object = $this->container->has($className) ? $this->container->get($className) : null;
 
-        if ($hasDefault === true && !$object) {
+        if ($required === true && !$object) {
             return false;
         }
 
