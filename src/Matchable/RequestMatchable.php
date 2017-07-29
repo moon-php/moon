@@ -69,7 +69,7 @@ class RequestMatchable implements MatchableInterface
         }
 
         foreach ($matches as $name => $value) {
-            $this->request = $this->request->withAttribute($name, $value[0]);
+            $this->request = $this->request->withAttribute($name, $value);
         }
 
         return true;
@@ -109,12 +109,11 @@ class RequestMatchable implements MatchableInterface
             return [$isPatternMatched, []];
         }
 
-        foreach (array_shift($matches) as $k => $match) {
+        foreach ($matches as $k => $match) {
             if (is_int($k)) {
                 unset($matches[$k]);
                 continue;
             }
-
             $matches[$k] = array_shift($match);
         }
 

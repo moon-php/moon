@@ -166,6 +166,7 @@ class App extends AbstractPipeline implements PipelineInterface
 
         // If the body is not readable do not send any body to the client
         if (!$body->isReadable()) {
+
             return;
         }
 
