@@ -9,6 +9,12 @@ use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Moon\Moon\Exception\UnprocessableStageException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+use function array_shift;
+use function class_implements;
+use function current;
+use function in_array;
+use function is_callable;
+use function is_string;
 
 class WebProcessor implements ProcessorInterface
 {

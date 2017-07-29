@@ -22,6 +22,9 @@ use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Throwable;
+use function array_merge;
+use function header;
+use function http_response_code;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
@@ -117,7 +120,8 @@ class App extends AbstractPipeline implements PipelineInterface
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($matchableRequest)) {
 
-                $pipelineResponse = $processor->processStages(array_merge($this->stages(), $pipeline->stages()), $matchableRequest->requestWithAddedAttributes());
+                $stages = array_merge($this->stages(), $pipeline->stages());
+                $pipelineResponse = $processor->processStages($stages, $matchableRequest->requestWithAddedAttributes());
 
                 if ($pipelineResponse instanceof ResponseInterface) {
 
