@@ -25,7 +25,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     {
         $this->addArray($pipelines);
     }
-
+    
     /**
      * {@inheritdoc}
      */
@@ -43,7 +43,9 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     {
         foreach ($pipelines as $key => $pipeline) {
             if (!$pipeline instanceof PipelineInterface) {
-                throw new InvalidArgumentException('All pipelines must implement ' . PipelineInterface::class);
+                throw new InvalidArgumentException(
+                    sprintf('All pipelines must implement %s, %s given', PipelineInterface::class, gettype($pipeline))
+                );
             }
         }
 

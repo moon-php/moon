@@ -84,7 +84,7 @@ class RequestMatchable implements MatchableInterface
     {
         return $this->request;
     }
-
+    
     /**
      * Return an array made by 2 elements:
      *  - A boolean value as value for know if the current pattern matches the path
