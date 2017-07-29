@@ -7,38 +7,28 @@ namespace Moon\Moon;
 use Exception;
 use InvalidArgumentException;
 use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Container\ContainerWrapper;
+use Moon\Moon\Container\ContainerWrapperInterface;
 use Moon\Moon\Exception\InvalidArgumentException as MoonInvalidArgumentException;
 use Moon\Moon\Exception\UnprocessableStageException;
-use Moon\Moon\Handler\Error\ExceptionHandler;
-use Moon\Moon\Handler\Error\ExceptionHandlerInterface;
-use Moon\Moon\Handler\Error\ThrowableHandler;
-use Moon\Moon\Handler\Error\ThrowableHandlerInterface;
-use Moon\Moon\Handler\InvalidRequest\MethodNotAllowedHandler;
-use Moon\Moon\Handler\InvalidRequest\MethodNotAllowedHandlerInterface;
-use Moon\Moon\Handler\InvalidRequest\NotFoundHandler;
-use Moon\Moon\Handler\InvalidRequest\NotFoundHandlerInterface;
 use Moon\Moon\Matchable\MatchableInterface;
-use Moon\Moon\Matchable\RequestMatchable;
 use Moon\Moon\Pipeline\AbstractPipeline;
 use Moon\Moon\Pipeline\HttpPipeline;
 use Moon\Moon\Pipeline\PipelineInterface;
 use Moon\Moon\Processor\ProcessorInterface;
-use Moon\Moon\Processor\WebProcessor;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use Throwable;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
     /**
-     * @var ContainerInterface $container
+     * @var ContainerWrapperInterface $containerWrapper
      */
-    private $container;
+    private $containerWrapper;
 
     /**
      * App constructor.
@@ -47,7 +37,7 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function __construct(ContainerInterface $container)
     {
-        $this->container = $container;
+        $this->containerWrapper = new ContainerWrapper($container);
     }
 
     /**
@@ -64,22 +54,14 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     public function run(PipelineCollectionInterface $pipelines): void
     {
-        /** @var ServerRequestInterface $request */
-        $request = $this->getContainerEntry(ServerRequestInterface::class, true);
-        /** @var ResponseInterface $response */
-        $response = $this->getContainerEntry(ResponseInterface::class, true);
-        /** @var ProcessorInterface $processor */
-        $processor = $this->getContainerEntry(ProcessorInterface::class) ?: new WebProcessor($this->container);
-        /** @var ExceptionHandlerInterface $exceptionHandler */
-        $exceptionHandler = $this->getContainerEntry(ExceptionHandlerInterface::class) ?: new ExceptionHandler();
-        /** @var ThrowableHandlerInterface $throwableHandler */
-        $throwableHandler = $this->getContainerEntry(ThrowableHandlerInterface::class) ?: new ThrowableHandler();
-        /** @var NotFoundHandlerInterface $notFoundHandler */
-        $notFoundHandler = $this->getContainerEntry(NotFoundHandlerInterface::class) ?: new NotFoundHandler();
-        /** @var MethodNotAllowedHandlerInterface $methodNotAllowed */
-        $methodNotAllowed = $this->getContainerEntry(MethodNotAllowedHandlerInterface::class) ?: new MethodNotAllowedHandler();
-        /** @var MatchableInterface $methodNotAllowed */
-        $matchableRequest = $this->getContainerEntry(MatchableInterface::class) ?: new RequestMatchable($request);
+        $request = $this->containerWrapper->request();
+        $response = $this->containerWrapper->response();
+        $processor = $this->containerWrapper->processor();
+        $exceptionHandler = $this->containerWrapper->exceptionHandler();
+        $throwableHandler = $this->containerWrapper->throwableHandler();
+        $notFoundHandler = $this->containerWrapper->notFoundHandler();
+        $methodNotAllowed = $this->containerWrapper->methodNotAllowed();
+        $matchableRequest = $this->containerWrapper->matchableRequest();
 
         try {
             // If a pipeline match print the response and return
@@ -142,11 +124,7 @@ class App extends AbstractPipeline implements PipelineInterface
                     return $pipelineResponse;
                 }
 
-                $stream = $this->container->get(StreamInterface::class);
-                if (!$stream instanceof StreamInterface) {
-                    throw new MoonInvalidArgumentException('Stream must be a valid ' . StreamInterface::class . ' instance');
-                }
-
+                $stream = $this->containerWrapper->stream();
                 $stream->write($pipelineResponse);
 
                 return $response->withBody($stream);
@@ -188,8 +166,7 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         // Send the body (by chunk if specified in the container)
-        if ($this->container->has('moon.streamReadLength')) {
-            $length = $this->container->get('moon.streamReadLength');
+        if ($length = $this->containerWrapper->streamReadLength()) {
             while (!$body->eof()) {
                 echo $body->read($length);
             }
@@ -198,32 +175,5 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         echo $body->__toString();
-    }
-
-    /**
-     * Return an instance by the container or false if has a default type
-     *
-     * @param string $className
-     * @param bool $required
-     *
-     * @return mixed
-     *
-     * @throws ContainerExceptionInterface
-     * @throws MoonInvalidArgumentException
-     * @throws NotFoundExceptionInterface
-     */
-    private function getContainerEntry(string $className, bool $required = false)
-    {
-        $object = $this->container->has($className) ? $this->container->get($className) : null;
-
-        if ($required === true && !$object) {
-            return false;
-        }
-
-        if (!$object instanceof $className) {
-            throw new MoonInvalidArgumentException("Moon received an invalid $className instance from the container");
-        }
-
-        return $object;
     }
 }
