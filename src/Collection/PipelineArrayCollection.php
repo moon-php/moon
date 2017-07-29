@@ -6,6 +6,9 @@ namespace Moon\Moon\Collection;
 
 use Moon\Moon\Exception\InvalidArgumentException;
 use Moon\Moon\Pipeline\PipelineInterface;
+use function array_merge;
+use function gettype;
+use function sprintf;
 
 class PipelineArrayCollection implements PipelineCollectionInterface
 {
@@ -25,7 +28,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     {
         $this->addArray($pipelines);
     }
-    
+
     /**
      * {@inheritdoc}
      */

@@ -5,6 +5,16 @@ declare(strict_types=1);
 namespace Moon\Moon\Matchable;
 
 use Psr\Http\Message\ServerRequestInterface;
+use function array_pop;
+use function array_shift;
+use function in_array;
+use function is_int;
+use function preg_match;
+use function preg_match_all;
+use function preg_replace;
+use function preg_replace_callback;
+use function strpos;
+use function substr;
 
 class RequestMatchable implements MatchableInterface
 {
@@ -66,9 +76,7 @@ class RequestMatchable implements MatchableInterface
     }
 
     /**
-     * Return true if a request match a valid pattern but an invalid verb, false otherwise
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isPatternMatched(): bool
     {
@@ -76,15 +84,13 @@ class RequestMatchable implements MatchableInterface
     }
 
     /**
-     * Return the new ServerRequest with the added attributes
-     *
-     * @return ServerRequestInterface
+     * {@inheritdoc}
      */
     public function requestWithAddedAttributes(): ServerRequestInterface
     {
         return $this->request;
     }
-    
+
     /**
      * Return an array made by 2 elements:
      *  - A boolean value as value for know if the current pattern matches the path

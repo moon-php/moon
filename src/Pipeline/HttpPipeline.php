@@ -7,6 +7,9 @@ namespace Moon\Moon\Pipeline;
 use Fig\Http\Message\RequestMethodInterface;
 use Moon\Moon\Exception\InvalidArgumentException;
 use Moon\Moon\Matchable\MatchableInterface;
+use function in_array;
+use function is_array;
+use function strtoupper;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {

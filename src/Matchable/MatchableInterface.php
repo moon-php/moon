@@ -23,4 +23,11 @@ interface MatchableInterface
      * @return ServerRequestInterface
      */
     public function requestWithAddedAttributes(): ServerRequestInterface;
+
+    /**
+     * Return true if a request match a valid pattern but an invalid verb, false otherwise
+     *
+     * @return bool
+     */
+    public function isPatternMatched(): bool;
 }

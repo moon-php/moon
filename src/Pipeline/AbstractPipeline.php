@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Pipeline;
 
+use function is_array;
+
 abstract class AbstractPipeline
 {
     /**

@@ -7,6 +7,9 @@ namespace Moon\Moon\Pipeline;
 use Moon\Moon\Matchable\MatchableInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use function md5;
+use function mt_rand;
+use function uniqid;
 
 class HttpPipelineTest extends TestCase
 {

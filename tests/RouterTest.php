@@ -11,6 +11,9 @@ use Moon\Moon\Pipeline\HttpPipeline;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use function array_push;
+use function md5;
+use function mt_rand;
+use function uniqid;
 
 class RouterTest extends TestCase
 {
