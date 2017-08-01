@@ -68,8 +68,8 @@ class App extends AbstractPipeline implements PipelineInterface
 
         try {
             // If a pipeline match print the response and return
-            if ($response = $this->handlePipeline($pipelines, $matchableRequest, $processor, $response)) {
-                $this->sendResponse($response);
+            if ($handledResponse = $this->handlePipeline($pipelines, $matchableRequest, $processor, $response)) {
+                $this->sendResponse($handledResponse);
 
                 return;
             }
@@ -134,6 +134,8 @@ class App extends AbstractPipeline implements PipelineInterface
                 return $response->withBody($stream);
             }
         }
+
+        return null;
     }
 
     /**
