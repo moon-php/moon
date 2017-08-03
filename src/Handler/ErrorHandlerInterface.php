@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Handler\Error;
+namespace Moon\Moon\Handler;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
-interface ThrowableHandlerInterface
+interface ErrorHandlerInterface
 {
     /**
      * Return a Response for an application error

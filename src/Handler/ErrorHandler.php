@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Handler\Error;
+namespace Moon\Moon\Handler;
 
-use Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
-class ExceptionHandler implements ExceptionHandlerInterface
+class ErrorHandler implements ErrorHandlerInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function __invoke(Exception $exception, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function __invoke(Throwable $throwable, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
     }

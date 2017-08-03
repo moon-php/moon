@@ -6,7 +6,7 @@ namespace Moon\Moon\Pipeline;
 
 use Fig\Http\Message\RequestMethodInterface;
 use Moon\Moon\Exception\InvalidArgumentException;
-use Moon\Moon\Matchable\MatchableInterface;
+use Moon\Moon\Matchable\MatchableRequestInterface;
 use function in_array;
 use function is_array;
 use function strtoupper;
@@ -72,7 +72,7 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
     /**
      * {@inheritdoc}
      */
-    public function matchBy(MatchableInterface $matchable): bool
+    public function matchBy(MatchableRequestInterface $matchable): bool
     {
         if ($matchable->match(['verbs' => $this->verbs, 'pattern' => $this->pattern])) {
 

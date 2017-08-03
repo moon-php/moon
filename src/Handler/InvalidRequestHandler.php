@@ -2,19 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Handler\InvalidRequest;
+namespace Moon\Moon\Handler;
 
-use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class MethodNotAllowedHandler implements MethodNotAllowedHandlerInterface
+class InvalidRequestHandler implements InvalidRequestHandlerInterface
 {
     /**
      * {@inheritdoc}
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $response->withStatus(StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED);
+        return $response;
     }
 }

@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace Moon\Moon;
 
-use Exception;
+use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use Moon\Moon\Collection\PipelineCollectionInterface;
-use Moon\Moon\Container\ContainerWrapper;
-use Moon\Moon\Container\ContainerWrapperInterface;
-use Moon\Moon\Exception\InvalidArgumentException as MoonInvalidArgumentException;
 use Moon\Moon\Exception\UnprocessableStageException;
-use Moon\Moon\Matchable\MatchableInterface;
+use Moon\Moon\Handler\ErrorHandlerInterface;
+use Moon\Moon\Handler\InvalidRequestHandlerInterface;
+use Moon\Moon\Matchable\MatchableRequestInterface;
 use Moon\Moon\Pipeline\AbstractPipeline;
 use Moon\Moon\Pipeline\HttpPipeline;
 use Moon\Moon\Pipeline\PipelineInterface;
 use Moon\Moon\Processor\ProcessorInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Throwable;
 use function array_merge;
@@ -29,18 +26,62 @@ use function http_response_code;
 class App extends AbstractPipeline implements PipelineInterface
 {
     /**
-     * @var ContainerWrapperInterface $containerWrapper
+     * @var ServerRequestInterface
      */
-    private $containerWrapper;
+    private $request;
+    /**
+     * @var ResponseInterface
+     */
+    private $response;
+    /**
+     * @var ProcessorInterface
+     */
+    private $processor;
+    /**
+     * @var MatchableRequestInterface
+     */
+    private $matchableRequest;
+    /**
+     * @var ErrorHandlerInterface
+     */
+    private $errorHandler;
+    /**
+     * @var InvalidRequestHandlerInterface
+     */
+    private $invalidRequestHandler;
+    /**
+     * @var int|null
+     */
+    private $streamReadLength;
 
     /**
      * App constructor.
      *
-     * @param ContainerInterface $container
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param ProcessorInterface $processor
+     * @param MatchableRequestInterface $matchableRequest
+     * @param ErrorHandlerInterface $errorHandler
+     * @param InvalidRequestHandlerInterface $invalidRequestHandler
+     * @param int|null $streamReadLength
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        ProcessorInterface $processor,
+        MatchableRequestInterface $matchableRequest,
+        ErrorHandlerInterface $errorHandler,
+        InvalidRequestHandlerInterface $invalidRequestHandler,
+        int $streamReadLength = null
+    )
     {
-        $this->containerWrapper = new ContainerWrapper($container);
+        $this->request = $request;
+        $this->response = $response;
+        $this->processor = $processor;
+        $this->matchableRequest = $matchableRequest;
+        $this->errorHandler = $errorHandler;
+        $this->invalidRequestHandler = $invalidRequestHandler;
+        $this->streamReadLength = $streamReadLength;
     }
 
     /**
@@ -50,45 +91,25 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @return void
      *
-     * @throws ContainerExceptionInterface
-     * @throws MoonInvalidArgumentException
-     * @throws NotFoundExceptionInterface
      * @throws RuntimeException
      */
     public function run(PipelineCollectionInterface $pipelines): void
     {
-        $request = $this->containerWrapper->request();
-        $response = $this->containerWrapper->response();
-        $processor = $this->containerWrapper->processor();
-        $exceptionHandler = $this->containerWrapper->exceptionHandler();
-        $throwableHandler = $this->containerWrapper->throwableHandler();
-        $notFoundHandler = $this->containerWrapper->notFoundHandler();
-        $methodNotAllowed = $this->containerWrapper->methodNotAllowed();
-        $matchableRequest = $this->containerWrapper->matchableRequest();
-
         try {
             // If a pipeline match print the response and return
-            if ($handledResponse = $this->handlePipeline($pipelines, $matchableRequest, $processor, $response)) {
+            if ($handledResponse = $this->handlePipeline($pipelines)) {
                 $this->sendResponse($handledResponse);
 
                 return;
             }
 
             // If a route pattern matched but the http verbs was different, print a '405 response' and return
-            if ($matchableRequest->isPatternMatched()) {
-                $this->sendResponse($methodNotAllowed($request, $response));
-
-                return;
-            }
-
             // If no route pattern matched, print a '404 response' and return
-            $this->sendResponse($notFoundHandler($request, $response));
+            $statusCode = $this->matchableRequest->isPatternMatched() ? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED : StatusCodeInterface::STATUS_NOT_FOUND;
+            $this->sendResponse($this->invalidRequestHandler->__invoke($this->matchableRequest->request(), $this->response->withStatus($statusCode)));
 
-            return;
-        } catch (Exception $e) {
-            $this->sendResponse($exceptionHandler($e, $request, $response));
         } catch (Throwable $e) {
-            $this->sendResponse($throwableHandler($e, $request, $response));
+            $this->sendResponse($this->errorHandler->__invoke($e, $this->request, $this->response));
         }
     }
 
@@ -96,42 +117,31 @@ class App extends AbstractPipeline implements PipelineInterface
      * Process the pipelines and return a ResponseInterface if one of this match
      *
      * @param PipelineCollectionInterface $pipelines
-     * @param MatchableInterface $matchableRequest
-     * @param ProcessorInterface $processor
-     * @param ResponseInterface $response
      *
-     * @return ResponseInterface|void
+     * @return null|ResponseInterface
      *
-     * @throws UnprocessableStageException
-     * @throws ContainerExceptionInterface
      * @throws InvalidArgumentException
-     * @throws MoonInvalidArgumentException
-     * @throws NotFoundExceptionInterface
      * @throws RuntimeException
+     * @throws UnprocessableStageException
      */
-    private function handlePipeline(
-        PipelineCollectionInterface $pipelines,
-        MatchableInterface $matchableRequest,
-        ProcessorInterface $processor,
-        ResponseInterface $response
-    ):?ResponseInterface
+    private function handlePipeline(PipelineCollectionInterface $pipelines):?ResponseInterface
     {
         /** @var HttpPipeline $pipeline */
         foreach ($pipelines as $pipeline) {
-            if ($pipeline->matchBy($matchableRequest)) {
+            if ($pipeline->matchBy($this->matchableRequest)) {
 
                 $stages = array_merge($this->stages(), $pipeline->stages());
-                $pipelineResponse = $processor->processStages($stages, $matchableRequest->requestWithAddedAttributes());
+                $pipelineResponse = $this->processor->processStages($stages, $this->matchableRequest->request());
 
                 if ($pipelineResponse instanceof ResponseInterface) {
 
                     return $pipelineResponse;
                 }
 
-                $stream = $this->containerWrapper->stream();
-                $stream->write($pipelineResponse);
+                $body = $this->response->getBody();
+                $body->write($pipelineResponse);
 
-                return $response->withBody($stream);
+                return $this->response->withBody($body);
             }
         }
 
@@ -145,8 +155,6 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @return void
      *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws RuntimeException
      */
     protected function sendResponse(ResponseInterface $response): void
@@ -173,9 +181,9 @@ class App extends AbstractPipeline implements PipelineInterface
         }
 
         // Send the body (by chunk if specified in the container)
-        if ($length = $this->containerWrapper->streamReadLength()) {
+        if ($this->streamReadLength !== null) {
             while (!$body->eof()) {
-                echo $body->read($length);
+                echo $body->read($this->streamReadLength);
             }
 
             return;

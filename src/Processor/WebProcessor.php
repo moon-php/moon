@@ -7,7 +7,9 @@ namespace Moon\Moon\Processor;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Moon\Moon\Exception\UnprocessableStageException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use function array_shift;
 use function class_implements;
@@ -35,6 +37,9 @@ class WebProcessor implements ProcessorInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
      *
      * @return ResponseInterface|string
      */

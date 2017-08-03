@@ -18,8 +18,6 @@ interface ProcessorInterface
      *
      * @return mixed
      *
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
      * @throws UnprocessableStageException
      */
     public function processStages(array $stages, $payload);
