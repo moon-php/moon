@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Handler\InvalidRequest;
+namespace Moon\Moon\Handler;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-interface MethodNotAllowedHandlerInterface
+interface InvalidRequestHandlerInterface
 {
     /**
      * Return a response for invalid request

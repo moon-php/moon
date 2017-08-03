@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Pipeline;
 
-use Moon\Moon\Matchable\MatchableInterface;
+use Moon\Moon\Matchable\MatchableRequestInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use function md5;
@@ -40,7 +40,7 @@ class AbstractPipelineTest extends TestCase
 
     public function testMatchBy()
     {
-        $matchable = $this->prophesize(MatchableInterface::class);
+        $matchable = $this->prophesize(MatchableRequestInterface::class);
         $matchable->match(['verbs' => ['GET'], 'pattern' => 'patternOne'])->shouldBeCalled(1)->willReturn(true);
         $matchable->match(['verbs' => ['POST'], 'pattern' => 'patternTwo'])->shouldBeCalled(1)->willReturn(false);
         $matchable = $matchable->reveal();

@@ -14,7 +14,7 @@ class RequestMatchableTest extends TestCase
     public function testConstruct()
     {
         $request = $this->prophesize(ServerRequestInterface::class)->reveal();
-        $matchable = new RequestMatchable($request);
+        $matchable = new MatchableRequest($request);
         $reflection = new ReflectionProperty($matchable, 'request');
         $reflection->setAccessible(true);
         $this->assertSame($request, $reflection->getValue($matchable));
@@ -35,12 +35,12 @@ class RequestMatchableTest extends TestCase
             $request->withAttribute($key, $value)->shouldBeCalled()->willReturn($request);
         }
         $request = $request->reveal();
-        $matchable = new RequestMatchable($request);
+        $matchable = new MatchableRequest($request);
         $match = $matchable->match(['pattern' => $pattern, 'verbs' => $verbs]);
 
         $this->assertSame($match, $expectedMatch);
         $this->assertSame($matchable->isPatternMatched(), $expectedIsPatternMatched);
-        $this->assertSame($matchable->requestWithAddedAttributes(), $request);
+        $this->assertSame($matchable->request(), $request);
     }
 
     public function matchDataProvider()

@@ -16,7 +16,7 @@ use function preg_replace_callback;
 use function strpos;
 use function substr;
 
-class RequestMatchable implements MatchableInterface
+class MatchableRequest implements MatchableRequestInterface
 {
     private const REGEX_PREFIX = '::';
     private const REQUIRED_PLACEHOLDER_REGEX = '~\{(.*?)\}~';
@@ -86,7 +86,7 @@ class RequestMatchable implements MatchableInterface
     /**
      * {@inheritdoc}
      */
-    public function requestWithAddedAttributes(): ServerRequestInterface
+    public function request(): ServerRequestInterface
     {
         return $this->request;
     }

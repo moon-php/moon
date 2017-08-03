@@ -7,12 +7,9 @@ namespace Moon\Moon;
 use ArrayObject;
 use Exception;
 use Moon\Moon\Collection\PipelineCollectionInterface;
-use Moon\Moon\Container\ContainerWrapper;
-use Moon\Moon\Handler\Error\ExceptionHandlerInterface;
-use Moon\Moon\Handler\Error\ThrowableHandlerInterface;
-use Moon\Moon\Handler\InvalidRequest\MethodNotAllowedHandlerInterface;
-use Moon\Moon\Handler\InvalidRequest\NotFoundHandlerInterface;
-use Moon\Moon\Matchable\MatchableInterface;
+use Moon\Moon\Handler\ErrorHandlerInterface;
+use Moon\Moon\Handler\InvalidRequestHandlerInterface;
+use Moon\Moon\Matchable\MatchableRequestInterface;
 use Moon\Moon\Pipeline\MatchablePipelineInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -21,24 +18,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use ReflectionProperty;
-use Throwable;
-use TypeError;
 
 class AppTest extends TestCase
 {
-    public function testConstruct()
-    {
-        $container = $this->prophesize(ContainerInterface::class)->reveal();
-        $app = new App($container);
-        $reflection = new ReflectionProperty(App::class, 'containerWrapper');
-        $reflection->setAccessible(true);
-        $containerWrapper = $reflection->getValue($app);
-        $reflection = new ReflectionProperty(ContainerWrapper::class, 'container');
-        $reflection->setAccessible(true);
-        $this->assertSame($container, $reflection->getValue($containerWrapper));
-    }
-
     public function testRunReturnNotFoundResponse()
     {
         $this->expectOutputString('Page not found');
@@ -55,16 +37,19 @@ class AppTest extends TestCase
         $notFoundResponse->getBody()->willReturn($responseBody);
         $notFoundResponse = $notFoundResponse->reveal();
 
-        $notFoundHandler = $this->prophesize(NotFoundHandlerInterface::class);
-        $notFoundHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
-        $notFoundHandler = $notFoundHandler->reveal();
+        $invalidRequestHandler = $this->prophesize(InvalidRequestHandlerInterface::class);
+        $invalidRequestHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
+        $invalidRequestHandler = $invalidRequestHandler->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
-        $container->has(NotFoundHandlerInterface::class)->willReturn(true);
-        $container->get(NotFoundHandlerInterface::class)->willReturn($notFoundHandler);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($invalidRequestHandler);
 
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->withStatus(404)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $response = $response->reveal();
         $container->has(ResponseInterface::class)->willReturn(true);
-        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $container->get(ResponseInterface::class)->willReturn($response);
 
         $container->has(ServerRequestInterface::class)->willReturn(true);
         $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
@@ -76,7 +61,7 @@ class AppTest extends TestCase
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
-        $app = new App($container);
+        $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
         $this->assertSame(404, http_response_code());
     }
@@ -97,27 +82,31 @@ class AppTest extends TestCase
         $methodNotAllowedResponse->getBody()->willReturn($responseBody);
         $methodNotAllowedResponse = $methodNotAllowedResponse->reveal();
 
-        $methodNotAllowedHandler = $this->prophesize(MethodNotAllowedHandlerInterface::class);
-        $methodNotAllowedHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($methodNotAllowedResponse);
-        $methodNotAllowedHandler = $methodNotAllowedHandler->reveal();
-
-        $matchable = $this->prophesize(MatchableInterface::class);
-        $matchable->isPatternMatched()->willReturn(true);
-        $matchable = $matchable->reveal();
+        $invalidRequestHandler = $this->prophesize(InvalidRequestHandlerInterface::class);
+        $invalidRequestHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($methodNotAllowedResponse);
+        $invalidRequestHandler = $invalidRequestHandler->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->has(MethodNotAllowedHandlerInterface::class)->willReturn(true);
-        $container->get(MethodNotAllowedHandlerInterface::class)->willReturn($methodNotAllowedHandler);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($invalidRequestHandler);
 
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->withStatus(405)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $response = $response->reveal();
         $container->has(ResponseInterface::class)->willReturn(true);
-        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $container->get(ResponseInterface::class)->willReturn($response);
 
         $container->has(ServerRequestInterface::class)->willReturn(true);
         $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
 
-        $container->has(MatchableInterface::class)->willReturn(true);
-        $container->get(MatchableInterface::class)->willReturn($matchable);
+        $matchable = $this->prophesize(MatchableRequestInterface::class);
+        $matchable->isPatternMatched()->willReturn(true);
+        $matchable->request()->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
+        $matchable = $matchable->reveal();
+
+        $container->has(MatchableRequestInterface::class)->willReturn(true);
+        $container->get(MatchableRequestInterface::class)->willReturn($matchable);
 
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
@@ -126,7 +115,7 @@ class AppTest extends TestCase
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
-        $app = new App($container);
+        $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
         $this->assertSame(405, http_response_code());
     }
@@ -147,14 +136,14 @@ class AppTest extends TestCase
         $exceptionResponse->getBody()->willReturn($responseBody);
         $exceptionResponse = $exceptionResponse->reveal();
 
-        $exceptionHandler = $this->prophesize(ExceptionHandlerInterface::class);
-        $exceptionHandler->__invoke(Argument::type(Exception::class), Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($exceptionResponse);
-        $exceptionHandler = $exceptionHandler->reveal();
+        $errorHandler = $this->prophesize(ErrorHandlerInterface::class);
+        $errorHandler->__invoke(Argument::type(Exception::class), Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($exceptionResponse);
+        $errorHandler = $errorHandler->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->has(ExceptionHandlerInterface::class)->willReturn(true);
-        $container->get(ExceptionHandlerInterface::class)->willReturn($exceptionHandler);
+        $container->has(ErrorHandlerInterface::class)->willReturn(true);
+        $container->get(ErrorHandlerInterface::class)->willReturn($errorHandler);
 
         $container->has(ResponseInterface::class)->willReturn(true);
         $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
@@ -173,55 +162,7 @@ class AppTest extends TestCase
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([$buggyPipeline]));
         $pipelineCollection = $pipelineCollection->reveal();
 
-        $app = new App($container);
-        $app->run($pipelineCollection);
-        $this->assertSame(500, http_response_code());
-    }
-
-
-    public function testRunReturnThrowableResponse()
-    {
-        $this->expectOutputString('Throwable occurred');
-
-        $responseBody = $this->prophesize(StreamInterface::class);
-        $responseBody->__toString()->willReturn('Throwable occurred');
-        $responseBody->isSeekable()->willReturn(false);
-        $responseBody->isReadable()->willReturn(true);
-        $responseBody = $responseBody->reveal();
-
-        $throwableResponse = $this->prophesize(ResponseInterface::class);
-        $throwableResponse->getStatusCode()->willReturn(500);
-        $throwableResponse->getHeaders()->willReturn([]);
-        $throwableResponse->getBody()->willReturn($responseBody);
-        $throwableResponse = $throwableResponse->reveal();
-
-        $throwableHandler = $this->prophesize(ThrowableHandlerInterface::class);
-        $throwableHandler->__invoke(Argument::type(Throwable::class), Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($throwableResponse);
-        $throwableHandler = $throwableHandler->reveal();
-
-        $container = $this->prophesize(ContainerInterface::class);
-
-        $container->has(ThrowableHandlerInterface::class)->willReturn(true);
-        $container->get(ThrowableHandlerInterface::class)->willReturn($throwableHandler);
-
-        $container->has(ResponseInterface::class)->willReturn(true);
-        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
-
-        $container->has(ServerRequestInterface::class)->willReturn(true);
-        $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
-
-        $container->has(Argument::any())->willReturn(false);
-        $container = $container->reveal();
-
-        $buggyPipeline = $this->prophesize(MatchablePipelineInterface::class);
-        $buggyPipeline->matchBy(Argument::any())->willThrow(TypeError::class);
-        $buggyPipeline = $buggyPipeline->reveal();
-
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
-        $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([$buggyPipeline]));
-        $pipelineCollection = $pipelineCollection->reveal();
-
-        $app = new App($container);
+        $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
         $this->assertSame(500, http_response_code());
     }
@@ -243,17 +184,20 @@ class AppTest extends TestCase
         $notFoundResponse->getBody()->willReturn($responseBody);
         $notFoundResponse = $notFoundResponse->reveal();
 
-        $notFoundHandler = $this->prophesize(NotFoundHandlerInterface::class);
-        $notFoundHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
-        $notFoundHandler = $notFoundHandler->reveal();
+        $invalidRequestHandler = $this->prophesize(InvalidRequestHandlerInterface::class);
+        $invalidRequestHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
+        $invalidRequestHandler = $invalidRequestHandler->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->has(NotFoundHandlerInterface::class)->willReturn(true);
-        $container->get(NotFoundHandlerInterface::class)->willReturn($notFoundHandler);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($invalidRequestHandler);
 
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->withStatus(404)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $response = $response->reveal();
         $container->has(ResponseInterface::class)->willReturn(true);
-        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $container->get(ResponseInterface::class)->willReturn($response);
 
         $container->has(ServerRequestInterface::class)->willReturn(true);
         $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
@@ -265,7 +209,7 @@ class AppTest extends TestCase
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
-        $app = new App($container);
+        $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
         $this->assertSame(404, http_response_code());
     }
@@ -287,20 +231,23 @@ class AppTest extends TestCase
         $notFoundResponse->getBody()->willReturn($responseBody);
         $notFoundResponse = $notFoundResponse->reveal();
 
-        $notFoundHandler = $this->prophesize(NotFoundHandlerInterface::class);
-        $notFoundHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
-        $notFoundHandler = $notFoundHandler->reveal();
+        $invalidRequestHandler = $this->prophesize(InvalidRequestHandlerInterface::class);
+        $invalidRequestHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
+        $invalidRequestHandler = $invalidRequestHandler->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->has(ContainerWrapper::STREAM_READ_LENGTH)->willReturn(true);
-        $container->get(ContainerWrapper::STREAM_READ_LENGTH)->willReturn($chunkLength);
+        $container->has(AppFactory::STREAM_READ_LENGTH)->willReturn(true);
+        $container->get(AppFactory::STREAM_READ_LENGTH)->willReturn($chunkLength);
 
-        $container->has(NotFoundHandlerInterface::class)->willReturn(true);
-        $container->get(NotFoundHandlerInterface::class)->willReturn($notFoundHandler);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($invalidRequestHandler);
 
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->withStatus(404)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $response = $response->reveal();
         $container->has(ResponseInterface::class)->willReturn(true);
-        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $container->get(ResponseInterface::class)->willReturn($response);
 
         $container->has(ServerRequestInterface::class)->willReturn(true);
         $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
@@ -312,14 +259,65 @@ class AppTest extends TestCase
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
-        $app = new App($container);
+        $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
         $this->assertSame(404, http_response_code());
     }
 
-    // TODO test allHeaderAreProperlySent
-    public function allHeaderAreProperlySent()
+    /**
+     * @dataProvider headerDataProvider
+     * @runInSeparateProcess
+     */
+    public function testAllHeaderAreProperlySent($headerToSend, $expectedHeaderSent)
     {
-        //
+        $responseBody = $this->prophesize(StreamInterface::class);
+        $responseBody->isSeekable()->willReturn(false);
+        $responseBody->isReadable()->willReturn(false);
+        $responseBody = $responseBody->reveal();
+
+        $notFoundResponse = $this->prophesize(ResponseInterface::class);
+        $notFoundResponse->getStatusCode()->willReturn(404);
+        $notFoundResponse->getHeaders()->willReturn($headerToSend);
+        $notFoundResponse->getBody()->willReturn($responseBody);
+        $notFoundResponse = $notFoundResponse->reveal();
+
+        $invalidRequestHandler = $this->prophesize(InvalidRequestHandlerInterface::class);
+        $invalidRequestHandler->__invoke(Argument::type(ServerRequestInterface::class), Argument::type(ResponseInterface::class))->willReturn($notFoundResponse);
+        $invalidRequestHandler = $invalidRequestHandler->reveal();
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($invalidRequestHandler);
+
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->withStatus(404)->willReturn($this->prophesize(ResponseInterface::class)->reveal());
+        $response = $response->reveal();
+        $container->has(ResponseInterface::class)->willReturn(true);
+        $container->get(ResponseInterface::class)->willReturn($response);
+
+        $container->has(ServerRequestInterface::class)->willReturn(true);
+        $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
+
+        $container->has(Argument::any())->willReturn(false);
+        $container = $container->reveal();
+
+        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
+        $pipelineCollection = $pipelineCollection->reveal();
+
+        $app = AppFactory::buildFromContainer($container);
+        $app->run($pipelineCollection);
+        $this->assertSame(404, http_response_code());
+        $this->assertSame($expectedHeaderSent, xdebug_get_headers());
+    }
+
+    public function headerDataProvider()
+    {
+        return [
+            [
+                ['HeaderNameOne' => ['HeaderValueOne', 'HeaderValueTwo'], 'HeaderValueTwo' => ['HeaderValueTwo']],
+                ['HeaderNameOne: HeaderValueOne', 'HeaderNameOne: HeaderValueTwo', 'HeaderValueTwo: HeaderValueTwo']
+            ]
+        ];
     }
 }

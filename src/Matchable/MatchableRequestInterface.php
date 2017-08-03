@@ -6,7 +6,7 @@ namespace Moon\Moon\Matchable;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-interface MatchableInterface
+interface MatchableRequestInterface
 {
     /**
      * Return true if a matchable object is matched by criteria
@@ -22,7 +22,7 @@ interface MatchableInterface
      *
      * @return ServerRequestInterface
      */
-    public function requestWithAddedAttributes(): ServerRequestInterface;
+    public function request(): ServerRequestInterface;
 
     /**
      * Return true if a request match a valid pattern but an invalid verb, false otherwise
