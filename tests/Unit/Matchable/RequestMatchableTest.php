@@ -52,11 +52,11 @@ class RequestMatchableTest extends TestCase
             ['/users/{id::\d+}', ['POST', 'GET'], 'DELETE', '/users/string', false, false, []],
             ['/users/{id::\d+}', ['DELETE'], 'DELETE', '/users/1', true, true, ['id' => 1]],
             ['/string[/{id::\d+}]', ['PUT'], 'PUT', '/string/11111111111', true, true, ['id' => '11111111111']],
-            ['/string[/[{id::\d+}]]', ['PUT'], 'PUT', '/string/', true, true, ['id' => '']],
+            ['/string[/[{id::\d+}]]', ['PUT'], 'PUT', '/string/', true, true, []],
             ['/string[/{id::\d+}]', ['PUT'], 'PUT', '/string/q', false, false, []],
             ['::/users/(?<attribute>\d+)', ['PUT'], 'PUT', '/users/1221', true, true, ['attribute' => '1221']],
-            ['/sub/[{a}/[{b}/[{c}]]]', ['GET'], 'GET', '/sub/1/', true, true, ['a' => 1, 'b' => '', 'c' => '']],
-            ['/sub/[{a}/[{b}/[{c}]]]', ['GET'], 'GET', '/sub/1/2/', true, true, ['a' => 1, 'b' => 2, 'c' => '']],
+            ['/sub/[{a}/[{b}/[{c}]]]', ['GET'], 'GET', '/sub/1/', true, true, ['a' => 1]],
+            ['/sub/[{a}/[{b}/[{c}]]]', ['GET'], 'GET', '/sub/1/2/', true, true, ['a' => 1, 'b' => 2]],
             ['/sub/[{a}/[{b}/[{c}]]]', ['GET'], 'GET', '/sub/1/2/3', true, true, ['a' => 1, 'b' => 2, 'c' => 3]],
         ];
     }
