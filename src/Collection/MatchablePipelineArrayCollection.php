@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Moon\Moon\Collection;
 
 use Moon\Moon\Exception\InvalidArgumentException;
-use Moon\Moon\Pipeline\PipelineInterface;
+use Moon\Moon\Pipeline\MatchablePipelineInterface;
 use function array_merge;
 use function gettype;
 use function sprintf;
 
-class PipelineArrayCollection implements PipelineCollectionInterface
+class MatchablePipelineArrayCollection implements MatchablePipelineCollectionInterface
 {
     /**
      * @var array $pipelines
@@ -18,7 +18,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     private $pipelines = [];
 
     /**
-     * PipelineArrayCollection constructor.
+     * MatchablePipelineArrayCollection constructor.
      *
      * @param array $pipelines
      *
@@ -32,7 +32,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function add(PipelineInterface $pipeline): void
+    public function add(MatchablePipelineInterface $pipeline): void
     {
         $this->pipelines[] = $pipeline;
     }
@@ -45,9 +45,9 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     public function addArray(array $pipelines): void
     {
         foreach ($pipelines as $key => $pipeline) {
-            if (!$pipeline instanceof PipelineInterface) {
+            if (!$pipeline instanceof MatchablePipelineInterface) {
                 throw new InvalidArgumentException(
-                    sprintf('All pipelines must implement %s, %s given', PipelineInterface::class, gettype($pipeline))
+                    sprintf('All pipelines must implement %s, %s given', MatchablePipelineInterface::class, gettype($pipeline))
                 );
             }
         }
@@ -58,7 +58,7 @@ class PipelineArrayCollection implements PipelineCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function merge(PipelineCollectionInterface $pipelineCollection): void
+    public function merge(MatchablePipelineCollectionInterface $pipelineCollection): void
     {
         $this->pipelines = array_merge($this->pipelines, $pipelineCollection->toArray());
     }

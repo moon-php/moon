@@ -6,13 +6,13 @@ namespace Moon\Moon;
 
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
-use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Collection\MatchablePipelineCollectionInterface;
 use Moon\Moon\Exception\UnprocessableStageException;
 use Moon\Moon\Handler\ErrorHandlerInterface;
 use Moon\Moon\Handler\InvalidRequestHandlerInterface;
 use Moon\Moon\Matchable\MatchableRequestInterface;
 use Moon\Moon\Pipeline\AbstractPipeline;
-use Moon\Moon\Pipeline\HttpPipeline;
+use Moon\Moon\Pipeline\MatchablePipelineInterface;
 use Moon\Moon\Pipeline\PipelineInterface;
 use Moon\Moon\Processor\ProcessorInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -87,13 +87,13 @@ class App extends AbstractPipeline implements PipelineInterface
     /**
      * Run the web application, and print a Response
      *
-     * @param PipelineCollectionInterface $pipelines
+     * @param MatchablePipelineCollectionInterface $pipelines
      *
      * @return void
      *
      * @throws RuntimeException
      */
-    public function run(PipelineCollectionInterface $pipelines): void
+    public function run(MatchablePipelineCollectionInterface $pipelines): void
     {
         try {
             // If a pipeline match print the response and return
@@ -103,11 +103,10 @@ class App extends AbstractPipeline implements PipelineInterface
                 return;
             }
 
-            // If a route pattern matched but the http verbs was different, print a '405 response' and return
-            // If no route pattern matched, print a '404 response' and return
+            // If a route pattern matched but the http verbs was different, print a '405 response'
+            // If no route pattern matched, print a '404 response'
             $statusCode = $this->matchableRequest->isPatternMatched() ? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED : StatusCodeInterface::STATUS_NOT_FOUND;
             $this->sendResponse($this->invalidRequestHandler->__invoke($this->matchableRequest->request(), $this->response->withStatus($statusCode)));
-
         } catch (Throwable $e) {
             $this->sendResponse($this->errorHandler->__invoke($e, $this->request, $this->response));
         }
@@ -116,7 +115,7 @@ class App extends AbstractPipeline implements PipelineInterface
     /**
      * Process the pipelines and return a ResponseInterface if one of this match
      *
-     * @param PipelineCollectionInterface $pipelines
+     * @param MatchablePipelineCollectionInterface $pipelines
      *
      * @return null|ResponseInterface
      *
@@ -124,9 +123,9 @@ class App extends AbstractPipeline implements PipelineInterface
      * @throws RuntimeException
      * @throws UnprocessableStageException
      */
-    private function handlePipeline(PipelineCollectionInterface $pipelines):?ResponseInterface
+    private function handlePipeline(MatchablePipelineCollectionInterface $pipelines):?ResponseInterface
     {
-        /** @var HttpPipeline $pipeline */
+        /** @var MatchablePipelineInterface $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($this->matchableRequest)) {
 

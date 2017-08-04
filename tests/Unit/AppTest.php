@@ -6,11 +6,12 @@ namespace Moon\Moon;
 
 use ArrayObject;
 use Exception;
-use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Collection\MatchablePipelineCollectionInterface;
 use Moon\Moon\Handler\ErrorHandlerInterface;
 use Moon\Moon\Handler\InvalidRequestHandlerInterface;
 use Moon\Moon\Matchable\MatchableRequestInterface;
 use Moon\Moon\Pipeline\MatchablePipelineInterface;
+use Moon\Moon\Processor\ProcessorInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Promise\ReturnPromise;
@@ -21,6 +22,110 @@ use Psr\Http\Message\StreamInterface;
 
 class AppTest extends TestCase
 {
+    public function testAppStackIsProperlyExecutedAndReturnRepsone()
+    {
+        $this->expectOutputString('Hello World');
+
+        $responseBody = $this->prophesize(StreamInterface::class);
+        $responseBody->__toString()->willReturn('Hello World');
+        $responseBody->isSeekable()->willReturn(false);
+        $responseBody->isReadable()->willReturn(true);
+        $responseBody = $responseBody->reveal();
+
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(200);
+        $response->getHeaders()->willReturn([]);
+        $response->getBody()->willReturn($responseBody);
+        $response = $response->reveal();
+
+        $processor = $this->prophesize(ProcessorInterface::class);
+        $processor->processStages(['PreStageOne', 'PreStageTwo', 'StageOne', 'StageTwo'], Argument::any(ServerRequestInterface::class))->willReturn($response);
+        $processor = $processor->reveal();
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($this->prophesize(InvalidRequestHandlerInterface::class)->reveal());
+
+        $container->has(ResponseInterface::class)->willReturn(true);
+        $container->get(ResponseInterface::class)->willReturn($this->prophesize(ResponseInterface::class));
+
+        $container->has(ServerRequestInterface::class)->willReturn(true);
+        $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
+
+        $container->has(ProcessorInterface::class)->willReturn(true);
+        $container->get(ProcessorInterface::class)->willReturn($processor);
+
+        $matchable = $this->prophesize(MatchablePipelineInterface::class);
+        $matchable->matchBy(Argument::any(MatchableRequestInterface::class))->willReturn(true);
+        $matchable->stages()->willReturn(['StageOne', 'StageTwo']);
+        $matchable = $matchable->reveal();
+
+        $container->has(Argument::any())->willReturn(false);
+        $container = $container->reveal();
+
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
+        $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([$matchable]));
+        $pipelineCollection = $pipelineCollection->reveal();
+
+        $app = AppFactory::buildFromContainer($container);
+        $app->pipe(['PreStageOne', 'PreStageTwo']);
+        $app->run($pipelineCollection);
+        $this->assertSame(200, http_response_code());
+    }
+
+
+    public function testAppStackIsProperlyExecutedAndReturnString()
+    {
+        $this->expectOutputString('Hello World');
+
+        $responseBody = $this->prophesize(StreamInterface::class);
+        $responseBody->__toString()->willReturn('Hello World');
+        $responseBody->write('Hello World')->willReturn(Argument::type('integer'));
+        $responseBody->isSeekable()->willReturn(false);
+        $responseBody->isReadable()->willReturn(true);
+        $responseBody = $responseBody->reveal();
+
+        $response = $this->prophesize(ResponseInterface::class);
+        $response->getStatusCode()->willReturn(200);
+        $response->getHeaders()->willReturn([]);
+        $response->getBody()->willReturn($responseBody);
+        $response->withBody($responseBody)->willReturn($response->reveal());
+        $response = $response->reveal();
+
+        $processor = $this->prophesize(ProcessorInterface::class);
+        $processor->processStages(['StageOne', 'StageTwo'], Argument::any(ServerRequestInterface::class))->willReturn('Hello World');
+        $processor = $processor->reveal();
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->has(InvalidRequestHandlerInterface::class)->willReturn(true);
+        $container->get(InvalidRequestHandlerInterface::class)->willReturn($this->prophesize(InvalidRequestHandlerInterface::class)->reveal());
+
+        $container->has(ResponseInterface::class)->willReturn(true);
+        $container->get(ResponseInterface::class)->willReturn($response);
+
+        $container->has(ServerRequestInterface::class)->willReturn(true);
+        $container->get(ServerRequestInterface::class)->willReturn($this->prophesize(ServerRequestInterface::class)->reveal());
+
+        $container->has(ProcessorInterface::class)->willReturn(true);
+        $container->get(ProcessorInterface::class)->willReturn($processor);
+
+        $matchable = $this->prophesize(MatchablePipelineInterface::class);
+        $matchable->matchBy(Argument::any(MatchableRequestInterface::class))->willReturn(true);
+        $matchable->stages()->willReturn(['StageOne', 'StageTwo']);
+        $matchable = $matchable->reveal();
+
+        $container->has(Argument::any())->willReturn(false);
+        $container = $container->reveal();
+
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
+        $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([$matchable]));
+        $pipelineCollection = $pipelineCollection->reveal();
+
+        $app = AppFactory::buildFromContainer($container);
+        $app->run($pipelineCollection);
+        $this->assertSame(200, http_response_code());
+    }
+
     public function testRunReturnNotFoundResponse()
     {
         $this->expectOutputString('Page not found');
@@ -57,7 +162,7 @@ class AppTest extends TestCase
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
@@ -111,7 +216,7 @@ class AppTest extends TestCase
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
@@ -158,7 +263,7 @@ class AppTest extends TestCase
         $buggyPipeline->matchBy(Argument::any())->willThrow(Exception::class);
         $buggyPipeline = $buggyPipeline->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([$buggyPipeline]));
         $pipelineCollection = $pipelineCollection->reveal();
 
@@ -205,7 +310,7 @@ class AppTest extends TestCase
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
@@ -255,7 +360,7 @@ class AppTest extends TestCase
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
@@ -301,7 +406,7 @@ class AppTest extends TestCase
         $container->has(Argument::any())->willReturn(false);
         $container = $container->reveal();
 
-        $pipelineCollection = $this->prophesize(PipelineCollectionInterface::class);
+        $pipelineCollection = $this->prophesize(MatchablePipelineCollectionInterface::class);
         $pipelineCollection->getIterator()->shouldBeCalled(1)->willReturn(new ArrayObject([]));
         $pipelineCollection = $pipelineCollection->reveal();
 
