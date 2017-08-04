@@ -110,11 +110,12 @@ class MatchableRequest implements MatchableRequestInterface
         }
 
         foreach ($matches as $k => $match) {
-            if (is_int($k)) {
+            $match = array_shift($match);
+            if (is_int($k) || empty($match)) {
                 unset($matches[$k]);
                 continue;
             }
-            $matches[$k] = array_shift($match);
+            $matches[$k] = $match;
         }
 
         return [$isPatternMatched, $matches];
