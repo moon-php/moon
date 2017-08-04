@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Moon\Moon;
 
 use Fig\Http\Message\RequestMethodInterface;
-use Moon\Moon\Collection\PipelineArrayCollection;
-use Moon\Moon\Collection\PipelineCollectionInterface;
+use Moon\Moon\Collection\MatchablePipelineArrayCollection;
+use Moon\Moon\Collection\MatchablePipelineCollectionInterface;
 use Moon\Moon\Pipeline\HttpPipeline;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -39,7 +39,7 @@ class RouterTest extends TestCase
 
         $this->assertSame($prefixSetInRouter, $prefix);
         $this->assertSame($stagesSetInRouter, $stages);
-        $this->assertInstanceOf(PipelineArrayCollection::class, $pipelineCollectionSetInRouter);
+        $this->assertInstanceOf(MatchablePipelineArrayCollection::class, $pipelineCollectionSetInRouter);
     }
 
     /**
@@ -210,7 +210,7 @@ class RouterTest extends TestCase
         $router = new Router();
         $reflection = new ReflectionProperty($router, 'pipelineCollection');
         $reflection->setAccessible(true);
-        $reflection->setValue($router, $this->prophesize(PipelineCollectionInterface::class)->reveal());
+        $reflection->setValue($router, $this->prophesize(MatchablePipelineCollectionInterface::class)->reveal());
         $this->assertSame($reflection->getValue($router), $router->pipelines());
     }
 
@@ -231,7 +231,7 @@ class RouterTest extends TestCase
         $pipelineCollectionReflectionProperty->setAccessible(true);
         $pipelineCollectionSetInRouter = $pipelineCollectionReflectionProperty->getValue($router);
 
-        $pipelineArrayReflectionProperty = new ReflectionProperty(PipelineArrayCollection::class, 'pipelines');
+        $pipelineArrayReflectionProperty = new ReflectionProperty(MatchablePipelineArrayCollection::class, 'pipelines');
         $pipelineArrayReflectionProperty->setAccessible(true);
         $httpPipelineSetInCollection = $pipelineArrayReflectionProperty->getValue($pipelineCollectionSetInRouter)[0];
 
@@ -249,6 +249,6 @@ class RouterTest extends TestCase
         $this->assertSame($httpPipelinePatternSetInPipeline, $expectedPattern);
         $this->assertSame($httpPipelineSetInCollection->stages(), $expectedStagesSetInHttpPipeline);
         $this->assertSame($expectedVerbs, $httpPipelineVerbSetInPipeline);
-        $this->assertInstanceOf(PipelineArrayCollection::class, $pipelineCollectionSetInRouter);
+        $this->assertInstanceOf(MatchablePipelineArrayCollection::class, $pipelineCollectionSetInRouter);
     }
 }

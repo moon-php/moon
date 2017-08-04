@@ -9,3 +9,6 @@ build:
                 coverage:
                     file: 'coverage-file'
                     format: 'clover'
+filter:
+    excluded_paths:
+        - "tests/"
