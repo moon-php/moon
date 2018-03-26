@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Unit\Processor;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Moon\Moon\Exception\UnprocessableStageException;
 use Moon\Moon\Processor\WebProcessor;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +11,7 @@ use Prophecy\Argument;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class WebProcessorTest extends TestCase
 {
@@ -44,21 +43,15 @@ class WebProcessorTest extends TestCase
     {
         $response = $this->prophesize(ResponseInterface::class)->reveal();
 
-        $delegate = $this->prophesize(DelegateInterface::class);
-        $delegate->process(Argument::type(ServerRequestInterface::class))->willReturn($response);
-        $delegate = $delegate->reveal();
-
-        $middleware = $this->prophesize(MiddlewareInterface::class);
-        $middleware->process(Argument::type(ServerRequestInterface::class), $delegate)->willReturn($response);
-        $middleware = $middleware->reveal();
+        $requestHandler = $this->prophesize(RequestHandlerInterface::class);
+        $requestHandler->handle(Argument::type(ServerRequestInterface::class))->willReturn($response);
+        $requestHandler = $requestHandler->reveal();
 
         $emptyContainer = $this->prophesize(ContainerInterface::class)->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
-        $container->has('a middleware')->willReturn(true);
-        $container->get('a middleware')->willReturn($middleware);
         $container->has('a delegate')->willReturn(true);
-        $container->get('a delegate')->willReturn($delegate);
+        $container->get('a delegate')->willReturn($requestHandler);
         $container = $container->reveal();
 
         return [
@@ -73,9 +66,7 @@ class WebProcessorTest extends TestCase
                 return 12;
             }], $emptyContainer, 12],
 
-            [[$middleware, $delegate], $emptyContainer, $response],
-            [[$delegate], $emptyContainer, $response],
-            [['a middleware', 'a delegate'], $container, $response],
+            [[$requestHandler], $emptyContainer, $response],
             [['a delegate'], $container, $response]
         ];
     }
