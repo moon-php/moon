@@ -10,10 +10,6 @@ use Moon\Moon\Collection\MatchablePipelineCollectionInterface;
 use Moon\Moon\Pipeline\HttpPipeline;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
-use function array_push;
-use function md5;
-use function mt_rand;
-use function uniqid;
 
 class RouterTest extends TestCase
 {
@@ -22,7 +18,7 @@ class RouterTest extends TestCase
      */
     public function testConstruct($stages)
     {
-        $prefix = md5(uniqid((string)mt_rand(), true));
+        $prefix = \md5(\uniqid((string) \mt_rand(), true));
         $router = new Router($prefix, $stages);
 
         $prefixReflectionProperty = new ReflectionProperty(Router::class, 'prefix');
@@ -47,13 +43,13 @@ class RouterTest extends TestCase
      */
     public function testGet($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->get($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_GET]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_GET]);
     }
 
     /**
@@ -61,13 +57,13 @@ class RouterTest extends TestCase
      */
     public function testPost($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->post($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_POST]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_POST]);
     }
 
     /**
@@ -75,13 +71,13 @@ class RouterTest extends TestCase
      */
     public function testPut($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->put($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_PUT]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_PUT]);
     }
 
     /**
@@ -89,13 +85,13 @@ class RouterTest extends TestCase
      */
     public function testPatch($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->patch($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_PATCH]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_PATCH]);
     }
 
     /**
@@ -103,13 +99,13 @@ class RouterTest extends TestCase
      */
     public function testDelete($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->delete($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_DELETE]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_DELETE]);
     }
 
     /**
@@ -117,13 +113,13 @@ class RouterTest extends TestCase
      */
     public function testOptions($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->options($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_OPTIONS]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_OPTIONS]);
     }
 
     /**
@@ -131,13 +127,13 @@ class RouterTest extends TestCase
      */
     public function testHead($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->head($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_HEAD]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_HEAD]);
     }
 
     /**
@@ -145,13 +141,13 @@ class RouterTest extends TestCase
      */
     public function testPurge($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->purge($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_PURGE]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_PURGE]);
     }
 
     /**
@@ -159,13 +155,13 @@ class RouterTest extends TestCase
      */
     public function testTrace($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->trace($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_TRACE]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_TRACE]);
     }
 
     /**
@@ -173,13 +169,13 @@ class RouterTest extends TestCase
      */
     public function testConnect($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->connect($secondPrefix, $stages);
 
-        $this->toNameThisOne($router, $stages, $firstPrefix . $secondPrefix, [RequestMethodInterface::METHOD_CONNECT]);
+        $this->toNameThisOne($router, $stages, $firstPrefix.$secondPrefix, [RequestMethodInterface::METHOD_CONNECT]);
     }
 
     /**
@@ -187,8 +183,8 @@ class RouterTest extends TestCase
      */
     public function testMap($stages)
     {
-        $firstPrefix = md5(uniqid((string)mt_rand(), true));
-        $secondPrefix = md5(uniqid((string)mt_rand(), true));
+        $firstPrefix = \md5(\uniqid((string) \mt_rand(), true));
+        $secondPrefix = \md5(\uniqid((string) \mt_rand(), true));
 
         $router = new Router($firstPrefix, $stages);
         $router->map(
@@ -200,7 +196,7 @@ class RouterTest extends TestCase
         $this->toNameThisOne(
             $router,
             $stages,
-            $firstPrefix . $secondPrefix,
+            $firstPrefix.$secondPrefix,
             [RequestMethodInterface::METHOD_HEAD, RequestMethodInterface::METHOD_GET, RequestMethodInterface::METHOD_PUT]
         );
     }
@@ -221,7 +217,7 @@ class RouterTest extends TestCase
         $pipeline = $this->prophesize(HttpPipeline::class)->reveal();
 
         return [
-            [$callable, 'string', $pipeline, [$callable, 'string', $pipeline, [$callable, 'string', $pipeline]]]
+            [$callable, 'string', $pipeline, [$callable, 'string', $pipeline, [$callable, 'string', $pipeline]]],
         ];
     }
 
@@ -244,7 +240,7 @@ class RouterTest extends TestCase
         $httpPipelinePatternSetInPipeline = $httpPipelinePatternReflectionProperty->getValue($httpPipelineSetInCollection);
 
         $expectedStagesSetInHttpPipeline = [];
-        array_push($expectedStagesSetInHttpPipeline, $stages, $stages);
+        \array_push($expectedStagesSetInHttpPipeline, $stages, $stages);
 
         $this->assertSame($httpPipelinePatternSetInPipeline, $expectedPattern);
         $this->assertSame($httpPipelineSetInCollection->stages(), $expectedStagesSetInHttpPipeline);

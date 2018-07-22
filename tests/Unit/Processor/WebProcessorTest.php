@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Unit\Processor;
+namespace Moon\Moon\Processor;
 
 use Moon\Moon\Exception\UnprocessableStageException;
-use Moon\Moon\Processor\WebProcessor;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Container\ContainerInterface;
@@ -38,7 +37,6 @@ class WebProcessorTest extends TestCase
         $this->assertSame($expectedResult, $result);
     }
 
-
     public function stagesAndContainerDataProvider()
     {
         $response = $this->prophesize(ResponseInterface::class)->reveal();
@@ -55,7 +53,6 @@ class WebProcessorTest extends TestCase
         $container = $container->reveal();
 
         return [
-
             [[function () {
                 return 1;
             }, function ($payload) {
@@ -67,7 +64,7 @@ class WebProcessorTest extends TestCase
             }], $emptyContainer, 12],
 
             [[$requestHandler], $emptyContainer, $response],
-            [['a delegate'], $container, $response]
+            [['a delegate'], $container, $response],
         ];
     }
 }

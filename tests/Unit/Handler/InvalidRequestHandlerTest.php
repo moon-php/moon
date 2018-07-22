@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Handler;
 
-use Fig\Http\Message\StatusCodeInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

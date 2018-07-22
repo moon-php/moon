@@ -93,7 +93,7 @@ class PipelineArrayCollectionTest extends TestCase
         foreach ($collection as $key => $pipeline) {
             $this->assertSame($key, $i);
             $this->assertSame($pipelines[$i], $pipeline);
-            $i++;
+            ++$i;
         }
     }
 }

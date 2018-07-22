@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Moon\Moon\Container;
+namespace Moon\Moon;
 
-use Moon\Moon\AppFactory;
 use Moon\Moon\Exception\InvalidArgumentException;
 use Moon\Moon\Handler\ErrorHandler;
 use Moon\Moon\Handler\ErrorHandlerInterface;
@@ -100,7 +99,6 @@ class AppFactoryTest extends TestCase
         $reflection->setAccessible(true);
 
         $this->assertInstanceOf(ErrorHandler::class, $reflection->invoke(null, $container->reveal()));
-
     }
 
     public function testExceptionHandler()
@@ -147,7 +145,6 @@ class AppFactoryTest extends TestCase
         $reflection->setAccessible(true);
 
         $this->assertInstanceOf(MatchableRequest::class, $reflection->invoke(null, $container->reveal()));
-
     }
 
     public function testMatchable()
@@ -170,7 +167,6 @@ class AppFactoryTest extends TestCase
         $reflection->setAccessible(true);
 
         $this->assertNull($reflection->invoke(null, $container->reveal()));
-
     }
 
     public function testStreamLength()

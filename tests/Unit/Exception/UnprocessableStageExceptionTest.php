@@ -21,7 +21,7 @@ class UnprocessableStageExceptionTest extends TestCase
     public function stagesDataProvider()
     {
         return [
-            ['invalid stage'], [12], [new SplStack()]
+            ['invalid stage'], [12], [new SplStack()],
         ];
     }
 }

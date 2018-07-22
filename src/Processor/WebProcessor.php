@@ -10,31 +10,21 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use function array_shift;
 use function current;
-use function is_callable;
-use function is_string;
 
 class WebProcessor implements ProcessorInterface
 {
     /**
-     * @var ContainerInterface $container
+     * @var ContainerInterface
      */
     private $container;
 
-    /**
-     * WebProcessorInterface constructor.
-     *
-     * @param ContainerInterface $container
-     */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      *
@@ -43,28 +33,25 @@ class WebProcessor implements ProcessorInterface
     public function processStages(array $stages, $payload)
     {
         // Take the stage to handle
-        $currentStage = array_shift($stages);
+        $currentStage = \array_shift($stages);
 
         // If is a string get the instance in the container
-        if (is_string($currentStage) && $this->container->has($currentStage)) {
+        if (\is_string($currentStage) && $this->container->has($currentStage)) {
             $currentStage = $this->container->get($currentStage);
         }
 
         // If the current stage is a RequestHandler use it and return the Response
         if ($currentStage instanceof RequestHandlerInterface) {
-
             return $currentStage->handle($payload);
         }
 
         // Process the current stage, and proceed to the stack
-        if (current($stages) !== false && is_callable($currentStage)) {
-
+        if (false !== \current($stages) && \is_callable($currentStage)) {
             return $this->processStages($stages, $currentStage($payload));
         }
 
         // If there's not next stage in the stack, return the result for this one
-        if (is_callable($currentStage)) {
-
+        if (\is_callable($currentStage)) {
             return $currentStage($payload);
         }
 

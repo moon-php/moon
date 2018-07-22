@@ -10,12 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 interface InvalidRequestHandlerInterface
 {
     /**
-     * Return a response for invalid request
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     *
-     * @return ResponseInterface
+     * Return a response for invalid request.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface;
 }
