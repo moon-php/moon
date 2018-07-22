@@ -1,9 +1,9 @@
 # Moon - Moon
 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/moon-php/moon/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/moon-php/moon/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/moon-php/moon/badges/build.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/build-status/master)
+[![Coverage Status](https://coveralls.io/repos/github/moon-php/moon/badge.svg)](https://coveralls.io/github/moon-php/moon)
+[![Build Status](https://travis-ci.org/moon-php/moon.svg?branch=master)](https://travis-ci.org/moon-php/moon)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![PHPStan](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
 ### [Documentation](http://moon-php.com/docs/moon/)
 
