@@ -7,18 +7,14 @@ namespace Moon\Moon\Pipeline;
 interface PipelineInterface
 {
     /**
-     * Add a stage to the Pipeline
+     * Add a stage to the Pipeline.
      *
      * @param callable|string|PipelineInterface|array $stage
-     *
-     * @return void
      */
     public function pipe($stage): void;
 
     /**
-     * Return all the stage of a Pipeline
-     *
-     * @return array
+     * Return all the stage of a Pipeline.
      */
     public function stages(): array;
 }

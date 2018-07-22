@@ -3,6 +3,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/moon-php/moon/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/moon-php/moon/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/?branch=master)
 [![Build Status](https://scrutinizer-ci.com/g/moon-php/moon/badges/build.png?b=master)](https://scrutinizer-ci.com/g/moon-php/moon/build-status/master)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
 ### [Documentation](http://moon-php.com/docs/moon/)
 

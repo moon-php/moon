@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Moon\Moon;
 
 use Fig\Http\Message\StatusCodeInterface;
-use InvalidArgumentException;
 use Moon\Moon\Collection\MatchablePipelineCollectionInterface;
 use Moon\Moon\Exception\UnprocessableStageException;
 use Moon\Moon\Handler\ErrorHandlerInterface;
@@ -19,9 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Throwable;
-use function array_merge;
-use function header;
-use function http_response_code;
 
 class App extends AbstractPipeline implements PipelineInterface
 {
@@ -54,17 +50,6 @@ class App extends AbstractPipeline implements PipelineInterface
      */
     private $streamReadLength;
 
-    /**
-     * App constructor.
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param ProcessorInterface $processor
-     * @param MatchableRequestInterface $matchableRequest
-     * @param ErrorHandlerInterface $errorHandler
-     * @param InvalidRequestHandlerInterface $invalidRequestHandler
-     * @param int|null $streamReadLength
-     */
     public function __construct(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -73,8 +58,7 @@ class App extends AbstractPipeline implements PipelineInterface
         ErrorHandlerInterface $errorHandler,
         InvalidRequestHandlerInterface $invalidRequestHandler,
         int $streamReadLength = null
-    )
-    {
+    ) {
         $this->request = $request;
         $this->response = $response;
         $this->processor = $processor;
@@ -85,11 +69,7 @@ class App extends AbstractPipeline implements PipelineInterface
     }
 
     /**
-     * Run the web application, and print a Response
-     *
-     * @param MatchablePipelineCollectionInterface $pipelines
-     *
-     * @return void
+     * Run the web application, and print a Response.
      *
      * @throws RuntimeException
      */
@@ -113,27 +93,19 @@ class App extends AbstractPipeline implements PipelineInterface
     }
 
     /**
-     * Process the pipelines and return a ResponseInterface if one of this match
+     * Process the pipelines and return a ResponseInterface if one of this match.
      *
-     * @param MatchablePipelineCollectionInterface $pipelines
-     *
-     * @return null|ResponseInterface
-     *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
      * @throws UnprocessableStageException
      */
-    private function handlePipeline(MatchablePipelineCollectionInterface $pipelines):?ResponseInterface
+    private function handlePipeline(MatchablePipelineCollectionInterface $pipelines): ?ResponseInterface
     {
         /** @var MatchablePipelineInterface $pipeline */
         foreach ($pipelines as $pipeline) {
             if ($pipeline->matchBy($this->matchableRequest)) {
-
-                $stages = array_merge($this->stages(), $pipeline->stages());
+                $stages = \array_merge($this->stages(), $pipeline->stages());
                 $pipelineResponse = $this->processor->processStages($stages, $this->matchableRequest->request());
 
                 if ($pipelineResponse instanceof ResponseInterface) {
-
                     return $pipelineResponse;
                 }
 
@@ -148,22 +120,18 @@ class App extends AbstractPipeline implements PipelineInterface
     }
 
     /**
-     * Send headers and body to the client
-     *
-     * @param ResponseInterface $response
-     *
-     * @return void
+     * Send headers and body to the client.
      *
      * @throws RuntimeException
      */
     protected function sendResponse(ResponseInterface $response): void
     {
         // Send all the headers
-        http_response_code($response->getStatusCode());
+        \http_response_code($response->getStatusCode());
         foreach ($response->getHeaders() as $headerName => $headerValues) {
             /** @var string[] $headerValues */
             foreach ($headerValues as $headerValue) {
-                header("$headerName: $headerValue", false);
+                \header("$headerName: $headerValue", false);
             }
         }
 
@@ -175,19 +143,18 @@ class App extends AbstractPipeline implements PipelineInterface
 
         // If the body is not readable do not send any body to the client
         if (!$body->isReadable()) {
+            return;
+        }
+
+        // Send the body (by chunk if specified in the container using streamReadLength value)
+        if (null === $this->streamReadLength) {
+            echo $body->__toString();
 
             return;
         }
 
-        // Send the body (by chunk if specified in the container)
-        if ($this->streamReadLength !== null) {
-            while (!$body->eof()) {
-                echo $body->read($this->streamReadLength);
-            }
-
-            return;
+        while (!$body->eof()) {
+            echo $body->read($this->streamReadLength);
         }
-
-        echo $body->__toString();
     }
 }

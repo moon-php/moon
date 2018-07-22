@@ -7,9 +7,6 @@ namespace Moon\Moon\Pipeline;
 use Fig\Http\Message\RequestMethodInterface;
 use Moon\Moon\Exception\InvalidArgumentException;
 use Moon\Moon\Matchable\MatchableRequestInterface;
-use function in_array;
-use function is_array;
-use function strtoupper;
 
 class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterface
 {
@@ -30,52 +27,47 @@ class HttpPipeline extends AbstractPipeline implements MatchablePipelineInterfac
     ];
 
     /**
-     * @var string $pattern
+     * @var string
      */
     private $pattern;
 
     /**
-     * @var array $verbs
+     * @var array
      */
     private $verbs;
 
     /**
      * HttpPipeline constructor.
      *
-     * @param array|string $verbs
-     * @param string $pattern
+     * @param array|string                            $verbs
      * @param callable|string|PipelineInterface|array $stages
      *
      * @throws \Moon\Moon\Exception\InvalidArgumentException
      */
     public function __construct($verbs, string $pattern, $stages = null)
     {
-        if (!is_array($verbs)) {
+        if (!\is_array($verbs)) {
             $verbs = [$verbs];
         }
 
         /** @var array $verbs */
         foreach ($verbs as $k => $verb) {
-            $verbs[$k] = strtoupper($verb);
-            if (!in_array($verbs[$k], self::VALID_VERBS, true)) {
+            $verbs[$k] = \mb_strtoupper($verb);
+            if (!\in_array($verbs[$k], self::VALID_VERBS, true)) {
                 throw new InvalidArgumentException("The verb: {$verbs[$k]} is not a valid http verb");
             }
         }
 
         $this->verbs = $verbs;
         $this->pattern = $pattern;
-        if ($stages !== null) {
+        if (null !== $stages) {
             $this->pipe($stages);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchBy(MatchableRequestInterface $matchable): bool
     {
         if ($matchable->match(['verbs' => $this->verbs, 'pattern' => $this->pattern])) {
-
             return true;
         }
 

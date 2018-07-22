@@ -39,7 +39,7 @@ class AppTest extends TestCase
         $response = $response->reveal();
 
         $processor = $this->prophesize(ProcessorInterface::class);
-        $processor->processStages(['PreStageOne', 'PreStageTwo', 'StageOne', 'StageTwo'], Argument::any(ServerRequestInterface::class))->willReturn($response);
+        $processor->processStages(['PreStageOne', 'PreStageTwo', 'StageOne', 'StageTwo'], Argument::type(ServerRequestInterface::class))->willReturn($response);
         $processor = $processor->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -56,7 +56,7 @@ class AppTest extends TestCase
         $container->get(ProcessorInterface::class)->willReturn($processor);
 
         $matchable = $this->prophesize(MatchablePipelineInterface::class);
-        $matchable->matchBy(Argument::any(MatchableRequestInterface::class))->willReturn(true);
+        $matchable->matchBy(Argument::type(MatchableRequestInterface::class))->willReturn(true);
         $matchable->stages()->willReturn(['StageOne', 'StageTwo']);
         $matchable = $matchable->reveal();
 
@@ -70,9 +70,8 @@ class AppTest extends TestCase
         $app = AppFactory::buildFromContainer($container);
         $app->pipe(['PreStageOne', 'PreStageTwo']);
         $app->run($pipelineCollection);
-        $this->assertSame(200, http_response_code());
+        $this->assertSame(200, \http_response_code());
     }
-
 
     public function testAppStackIsProperlyExecutedAndReturnString()
     {
@@ -93,7 +92,7 @@ class AppTest extends TestCase
         $response = $response->reveal();
 
         $processor = $this->prophesize(ProcessorInterface::class);
-        $processor->processStages(['StageOne', 'StageTwo'], Argument::any(ServerRequestInterface::class))->willReturn('Hello World');
+        $processor->processStages(['StageOne', 'StageTwo'], Argument::type(ServerRequestInterface::class))->willReturn('Hello World');
         $processor = $processor->reveal();
 
         $container = $this->prophesize(ContainerInterface::class);
@@ -110,7 +109,7 @@ class AppTest extends TestCase
         $container->get(ProcessorInterface::class)->willReturn($processor);
 
         $matchable = $this->prophesize(MatchablePipelineInterface::class);
-        $matchable->matchBy(Argument::any(MatchableRequestInterface::class))->willReturn(true);
+        $matchable->matchBy(Argument::type(MatchableRequestInterface::class))->willReturn(true);
         $matchable->stages()->willReturn(['StageOne', 'StageTwo']);
         $matchable = $matchable->reveal();
 
@@ -123,7 +122,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(200, http_response_code());
+        $this->assertSame(200, \http_response_code());
     }
 
     public function testRunReturnNotFoundResponse()
@@ -168,7 +167,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(404, http_response_code());
+        $this->assertSame(404, \http_response_code());
     }
 
     public function testRunReturnMethodNotAllowedResponse()
@@ -222,7 +221,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(405, http_response_code());
+        $this->assertSame(405, \http_response_code());
     }
 
     public function testRunReturnExceptionResponse()
@@ -269,7 +268,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(500, http_response_code());
+        $this->assertSame(500, \http_response_code());
     }
 
     public function testRunReturnNothingForNotReadableBody()
@@ -316,7 +315,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(404, http_response_code());
+        $this->assertSame(404, \http_response_code());
     }
 
     public function testRunBodyByStreamChunk()
@@ -366,7 +365,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(404, http_response_code());
+        $this->assertSame(404, \http_response_code());
     }
 
     /**
@@ -412,8 +411,8 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->run($pipelineCollection);
-        $this->assertSame(404, http_response_code());
-        $this->assertSame($expectedHeaderSent, xdebug_get_headers());
+        $this->assertSame(404, \http_response_code());
+        $this->assertSame($expectedHeaderSent, \xdebug_get_headers());
     }
 
     public function headerDataProvider()
@@ -421,8 +420,8 @@ class AppTest extends TestCase
         return [
             [
                 ['HeaderNameOne' => ['HeaderValueOne', 'HeaderValueTwo'], 'HeaderValueTwo' => ['HeaderValueTwo']],
-                ['HeaderNameOne: HeaderValueOne', 'HeaderNameOne: HeaderValueTwo', 'HeaderValueTwo: HeaderValueTwo']
-            ]
+                ['HeaderNameOne: HeaderValueOne', 'HeaderNameOne: HeaderValueTwo', 'HeaderValueTwo: HeaderValueTwo'],
+            ],
         ];
     }
 }

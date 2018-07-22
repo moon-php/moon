@@ -7,9 +7,6 @@ namespace Moon\Moon\Pipeline;
 use Moon\Moon\Matchable\MatchableRequestInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
-use function md5;
-use function mt_rand;
-use function uniqid;
 
 class HttpPipelineTest extends TestCase
 {
@@ -62,10 +59,10 @@ class HttpPipelineTest extends TestCase
         $stageTwo = $stageTwo->reveal();
 
         return [
-            ['POST', ['POST'], md5(uniqid((string)mt_rand(), true)), $stageTwo, [$stageOne]],
-            ['DELETE', ['DELETE'], md5(uniqid((string)mt_rand(), true)), $stageOne, [$stageOne]],
-            [['POST', 'PUT'], ['POST', 'PUT'], md5(uniqid((string)mt_rand(), true)), null, []],
-            ['GET', ['GET'], md5(uniqid((string)mt_rand(), true)), null, []],
+            ['POST', ['POST'], \md5(\uniqid((string) \mt_rand(), true)), $stageTwo, [$stageOne]],
+            ['DELETE', ['DELETE'], \md5(\uniqid((string) \mt_rand(), true)), $stageOne, [$stageOne]],
+            [['POST', 'PUT'], ['POST', 'PUT'], \md5(\uniqid((string) \mt_rand(), true)), null, []],
+            ['GET', ['GET'], \md5(\uniqid((string) \mt_rand(), true)), null, []],
         ];
     }
 }

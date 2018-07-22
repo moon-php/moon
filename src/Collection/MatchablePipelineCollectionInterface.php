@@ -9,36 +9,22 @@ use Moon\Moon\Pipeline\MatchablePipelineInterface;
 interface MatchablePipelineCollectionInterface extends \IteratorAggregate
 {
     /**
-     * Add a MatchablePipelineInterface to the Collection
-     *
-     * @param MatchablePipelineInterface $pipeline
-     *
-     * @return void
+     * Add a MatchablePipelineInterface to the Collection.
      */
     public function add(MatchablePipelineInterface $pipeline): void;
 
     /**
-     * Add an array of MatchablePipelineInterface to the Collection
-     *
-     * @param array $pipelines
-     *
-     * @return void
+     * Add an array of MatchablePipelineInterface to the Collection.
      */
     public function addArray(array $pipelines): void;
 
     /**
-     * Merge a MatchablePipelineInterfaceCollection
-     *
-     * @param MatchablePipelineCollectionInterface $pipelineCollection
-     *
-     * @return void
+     * Merge a MatchablePipelineInterfaceCollection.
      */
-    public function merge(MatchablePipelineCollectionInterface $pipelineCollection): void;
+    public function merge(self $pipelineCollection): void;
 
     /**
-     * Return an array of MatchablePipelineInterfaces
-     *
-     * @return array
+     * Return an array of MatchablePipelineInterfaces.
      */
     public function toArray(): array;
 }

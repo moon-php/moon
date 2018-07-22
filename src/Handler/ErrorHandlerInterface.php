@@ -11,13 +11,7 @@ use Throwable;
 interface ErrorHandlerInterface
 {
     /**
-     * Return a Response for an application error
-     *
-     * @param Throwable $exception
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     *
-     * @return ResponseInterface
+     * Return a Response for an application error.
      */
     public function __invoke(Throwable $exception, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface;
 }

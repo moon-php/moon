@@ -22,16 +22,12 @@ use Psr\Http\Message\ServerRequestInterface;
 class AppFactory
 {
     /**
-     * String to use as container entry for $streamReadLength()
+     * String to use as container entry for $streamReadLength().
      */
     public const STREAM_READ_LENGTH = 'moon.streamReadLength';
 
     /**
-     * Create an App using a container
-     *
-     * @param ContainerInterface $container
-     *
-     * @return App
+     * Create an App using a container.
      *
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
@@ -51,11 +47,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the ServerRequestInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return ServerRequestInterface
+     * Return an instance of the ServerRequestInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws InvalidArgumentException
@@ -71,11 +63,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the ResponseInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return ResponseInterface
+     * Return an instance of the ResponseInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws InvalidArgumentException
@@ -91,11 +79,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the ProcessorInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return ProcessorInterface
+     * Return an instance of the ProcessorInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -103,7 +87,6 @@ class AppFactory
     private static function processor(ContainerInterface $container): ProcessorInterface
     {
         if (!$container->has(ProcessorInterface::class)) {
-
             return new WebProcessor($container);
         }
 
@@ -111,11 +94,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the ErrorHandlerInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return ErrorHandlerInterface
+     * Return an instance of the ErrorHandlerInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -123,7 +102,6 @@ class AppFactory
     private static function errorHandler(ContainerInterface $container): ErrorHandlerInterface
     {
         if (!$container->has(ErrorHandlerInterface::class)) {
-
             return new ErrorHandler();
         }
 
@@ -131,11 +109,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the NotFoundHandlerInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return InvalidRequestHandlerInterface
+     * Return an instance of the NotFoundHandlerInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -143,7 +117,6 @@ class AppFactory
     private static function invalidRequestHandler(ContainerInterface $container): InvalidRequestHandlerInterface
     {
         if (!$container->has(InvalidRequestHandlerInterface::class)) {
-
             return new InvalidRequestHandler();
         }
 
@@ -151,11 +124,7 @@ class AppFactory
     }
 
     /**
-     * Return an instance of the MatchableInterface
-     *
-     * @param ContainerInterface $container
-     *
-     * @return MatchableRequestInterface
+     * Return an instance of the MatchableInterface.
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -163,7 +132,6 @@ class AppFactory
     private static function matchableRequest(ContainerInterface $container): MatchableRequestInterface
     {
         if (!$container->has(MatchableRequestInterface::class)) {
-
             return new MatchableRequest($container->get(ServerRequestInterface::class));
         }
 
@@ -171,16 +139,12 @@ class AppFactory
     }
 
     /**
-     * Return the length for read the stream, if null is return all the body will be print
-     *
-     * @param ContainerInterface $container
-     *
-     * @return int|null
+     * Return the length for read the stream, if null is return all the body will be print.
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    private static function streamReadLength(ContainerInterface $container):? int
+    private static function streamReadLength(ContainerInterface $container): ? int
     {
         return $container->has(self::STREAM_READ_LENGTH) ? $container->get(self::STREAM_READ_LENGTH) : null;
     }
