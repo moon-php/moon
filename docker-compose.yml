@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  moon:
+    build: .
+    volumes:
+      - ./:/moon
