@@ -12,12 +12,12 @@
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
-    "phpunit/phpunit": "^6.2",
     "friendsofphp/php-cs-fixer": "^2.12",
     "damianopetrungaro/php-commitizen": "^0.1.2",
     "phpstan/phpstan": "^0.10.1",
     "php-coveralls/php-coveralls": "^2.1",
-    "jangregor/phpstan-prophecy": "^0.2.0"
+    "jangregor/phpstan-prophecy": "^0.2.0",
+    "phpunit/phpunit": "^7.3"
   },
   "authors": [
     {
