@@ -22,7 +22,7 @@ class Router
     private $prefix;
 
     /**
-     * @var callable|string|HttpPipeline|array
+     * @var callable|string|HttpPipeline|array|null
      */
     private $routerStages;
 
