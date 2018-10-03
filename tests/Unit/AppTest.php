@@ -69,7 +69,7 @@ class AppTest extends TestCase
 
         $app = AppFactory::buildFromContainer($container);
         $app->pipe(['PreStageOne', 'PreStageTwo']);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(200, \http_response_code());
     }
 
@@ -121,7 +121,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(200, \http_response_code());
     }
 
@@ -166,7 +166,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(404, \http_response_code());
     }
 
@@ -220,7 +220,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(405, \http_response_code());
     }
 
@@ -267,7 +267,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(500, \http_response_code());
     }
 
@@ -314,7 +314,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(404, \http_response_code());
     }
 
@@ -364,7 +364,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(404, \http_response_code());
     }
 
@@ -410,7 +410,7 @@ class AppTest extends TestCase
         $pipelineCollection = $pipelineCollection->reveal();
 
         $app = AppFactory::buildFromContainer($container);
-        $app->run($pipelineCollection);
+        $app->sendResponse($app->run($pipelineCollection));
         $this->assertSame(404, \http_response_code());
         $this->assertSame($expectedHeaderSent, \xdebug_get_headers());
     }
