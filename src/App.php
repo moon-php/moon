@@ -73,22 +73,21 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @throws RuntimeException
      */
-    public function run(MatchablePipelineCollectionInterface $pipelines): void
+    public function run(MatchablePipelineCollectionInterface $pipelines): ResponseInterface
     {
         try {
             // If a pipeline match print the response and return
             if ($handledResponse = $this->handlePipeline($pipelines)) {
-                $this->sendResponse($handledResponse);
-
-                return;
+                return $handledResponse;
             }
 
             // If a route pattern matched but the http verbs was different, print a '405 response'
             // If no route pattern matched, print a '404 response'
             $statusCode = $this->matchableRequest->isPatternMatched() ? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED : StatusCodeInterface::STATUS_NOT_FOUND;
-            $this->sendResponse($this->invalidRequestHandler->__invoke($this->matchableRequest->request(), $this->response->withStatus($statusCode)));
+
+            return $this->invalidRequestHandler->__invoke($this->matchableRequest->request(), $this->response->withStatus($statusCode));
         } catch (Throwable $e) {
-            $this->sendResponse($this->errorHandler->__invoke($e, $this->request, $this->response));
+            return $this->errorHandler->__invoke($e, $this->request, $this->response);
         }
     }
 
@@ -124,7 +123,7 @@ class App extends AbstractPipeline implements PipelineInterface
      *
      * @throws RuntimeException
      */
-    protected function sendResponse(ResponseInterface $response): void
+    public function sendResponse(ResponseInterface $response): void
     {
         // Send all the headers
         \http_response_code($response->getStatusCode());
