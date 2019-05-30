@@ -12,7 +12,7 @@ ADD . /moon
 
 # Install dependeies for PHP
 RUN apt-get update && \
-    apt-get install -y git zlib1g-dev && \
+    apt-get install -y git libzip-dev && \
     docker-php-ext-install zip
 
 # Install dependecies (dev included)
