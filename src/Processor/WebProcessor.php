@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Moon\Moon\Processor;
 
+use function current;
 use Moon\Moon\Exception\UnprocessableStageException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use function current;
 
 class WebProcessor implements ProcessorInterface
 {
@@ -55,6 +55,6 @@ class WebProcessor implements ProcessorInterface
             return $currentStage($payload);
         }
 
-        throw new UnprocessableStageException($currentStage, 'The stage can\'t be handled');
+        throw new UnprocessableStageException($currentStage);
     }
 }
